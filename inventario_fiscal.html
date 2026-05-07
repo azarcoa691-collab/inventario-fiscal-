@@ -667,16 +667,36 @@
 
   <!-- SCANNER -->
   <div id="scanner-section">
-    <div class="info-box">
+    <div class="info-box" id="info-box-cam">
       <span class="ii">💡</span>
       <span>Apunta la cámara al código QR del kanban. Mantén el código dentro del recuadro azul.</span>
     </div>
 
-    <!-- Camera selector -->
+    <!-- Camera selector: only Rear camera and Barcode scanner -->
     <div id="cam-selector" style="display:flex;gap:8px;margin-bottom:10px;">
-      <button class="cam-opt selected" id="cam-opt-env" onclick="switchCamera('environment')" title="Cámara trasera">📷 Trasera</button>
-      <button class="cam-opt" id="cam-opt-user" onclick="switchCamera('user')" title="Cámara delantera">🤳 Delantera</button>
-      <button class="cam-opt" id="cam-opt-ir" onclick="switchCamera('ir')" title="Lector infrarrojo">🔴 IR / Barcode</button>
+      <button class="cam-opt selected" id="cam-opt-env" onclick="switchCamera('environment')">📷 Cámara trasera</button>
+      <button class="cam-opt" id="cam-opt-ir" onclick="switchCamera('ir')">🔴 Lector Barcode</button>
+    </div>
+
+    <!-- IR/Barcode mode panel (hidden by default) -->
+    <div id="ir-mode-panel" style="display:none;">
+      <div class="info-box" style="background:#fff3e0;border:1.5px solid #ffb74d;">
+        <span class="ii">🔴</span>
+        <span>Modo lector Barcode activo. Apunta el lector al código QR del kanban y presiona el gatillo.</span>
+      </div>
+      <div style="background:var(--white);border:2px dashed #ffb74d;border-radius:var(--radius);padding:28px 16px;text-align:center;margin-bottom:12px;">
+        <div style="font-size:48px;margin-bottom:10px;">🔴</div>
+        <div style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:6px;">Esperando escaneo...</div>
+        <div style="font-size:13px;color:var(--gray-text);">Presiona el gatillo del escáner para leer el QR</div>
+        <input id="barcode-hidden-input" type="text" 
+          style="position:absolute;opacity:0;width:1px;height:1px;top:0;left:0;pointer-events:none;"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          onchange="handleBarcodeInput(this.value)"
+          oninput="handleBarcodeInput(this.value)">
+      </div>
+      <div class="scan-status" id="ir-scan-status" style="text-align:center;font-size:13px;color:var(--gray-text);margin-bottom:8px;">
+        Listo para escanear
+      </div>
     </div>
 
     <!-- Camera activate button (shown only first time or after error) -->
@@ -913,27 +933,23 @@ async function startCamera() {
 }
 
 async function activateCamera() {
+  if (state.selectedCamera === 'ir') {
+    switchCamera('ir');
+    return;
+  }
   const btn = document.getElementById('cam-start-btn');
   btn.innerHTML = '⏳ Activando...';
   btn.disabled = true;
 
-  stopCamera(); // stop any existing stream first
+  stopCamera();
 
-  const camMode = state.selectedCamera || 'environment';
-  let constraints;
-
-  if (camMode === 'ir') {
-    // For Zebra IR/barcode scanner — try to enumerate and pick the rear-facing imager
-    constraints = await buildIRConstraints();
-  } else {
-    constraints = {
-      video: {
-        facingMode: { ideal: camMode },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    };
-  }
+  const constraints = {
+    video: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    }
+  };
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -944,6 +960,8 @@ async function activateCamera() {
     await video.play();
     btn.style.display = 'none';
     document.getElementById('scan-video-wrap').style.display = 'block';
+    document.getElementById('ir-mode-panel').style.display = 'none';
+    document.getElementById('info-box-cam').style.display = 'flex';
     document.getElementById('scan-status').innerHTML = `<div class="scanning-indicator"><div class="dot-pulse"></div> Escaneando...</div>`;
     scanningActive = true;
     requestAnimationFrame(scanFrame);
@@ -952,51 +970,84 @@ async function activateCamera() {
     btn.disabled = false;
     btn.style.display = 'flex';
     let msg = '⚠️ Sin acceso a cámara.';
-    if (e.name === 'NotAllowedError') msg = '🔒 Permiso denegado. Ve a Configuración del navegador y permite la cámara.';
-    else if (e.name === 'NotFoundError') msg = '📵 Cámara no encontrada. Prueba otra opción.';
+    if (e.name === 'NotAllowedError') msg = '🔒 Permiso denegado. Ve a Configuración y permite la cámara.';
+    else if (e.name === 'NotFoundError') msg = '📵 Cámara no encontrada.';
     else if (e.name === 'NotReadableError') msg = '⚠️ La cámara está en uso por otra app.';
-    else if (e.name === 'OverconstrainedError') msg = '⚠️ Esta cámara no está disponible. Prueba otra.';
     document.getElementById('scan-status').innerHTML = `<span style="color:var(--red);font-size:13px">${msg}</span>`;
   }
-}
-
-async function buildIRConstraints() {
-  // Try to find a Zebra-style imager camera by enumerating devices
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(d => d.kind === 'videoinput');
-    // Zebra TC devices typically have the barcode imager as the last or a specifically labeled camera
-    // Try to find one with "rear" or use deviceId of second/third camera
-    const zebraImager = videoDevices.find(d =>
-      d.label.toLowerCase().includes('imager') ||
-      d.label.toLowerCase().includes('barcode') ||
-      d.label.toLowerCase().includes('rear') ||
-      d.label.toLowerCase().includes('back')
-    );
-    if (zebraImager) {
-      return { video: { deviceId: { exact: zebraImager.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } };
-    }
-    // Fallback: pick last video device (often the imager on Zebra)
-    if (videoDevices.length > 1) {
-      return { video: { deviceId: { exact: videoDevices[videoDevices.length - 1].deviceId } } };
-    }
-  } catch(e) {}
-  // Default fallback to environment
-  return { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } };
 }
 
 async function switchCamera(mode) {
   state.selectedCamera = mode;
   // Update button styles
-  ['env','user','ir'].forEach(k => document.getElementById('cam-opt-' + k)?.classList.remove('selected'));
-  const map = { environment: 'env', user: 'user', ir: 'ir' };
+  ['env','ir'].forEach(k => document.getElementById('cam-opt-' + k)?.classList.remove('selected'));
+  const map = { environment: 'env', ir: 'ir' };
   document.getElementById('cam-opt-' + map[mode])?.classList.add('selected');
-  // Re-activate with new camera
-  await activateCamera();
+
+  if (mode === 'ir') {
+    // Stop camera, show barcode mode panel
+    stopCamera();
+    scanningActive = false;
+    document.getElementById('cam-start-btn').style.display = 'none';
+    document.getElementById('scan-video-wrap').style.display = 'none';
+    document.getElementById('ir-mode-panel').style.display = 'block';
+    document.getElementById('scan-status').innerHTML = '';
+    document.getElementById('info-box-cam').style.display = 'none';
+    // Focus hidden input so the Zebra scanner sends keystrokes here
+    focusBarcodeInput();
+  } else {
+    // Back to camera mode
+    document.getElementById('ir-mode-panel').style.display = 'none';
+    document.getElementById('info-box-cam').style.display = 'flex';
+    await activateCamera();
+  }
+}
+
+// Keep the hidden input focused so Zebra keyboard wedge goes there
+function focusBarcodeInput() {
+  const inp = document.getElementById('barcode-hidden-input');
+  if (!inp) return;
+  inp.value = '';
+  inp.focus();
+  // Re-focus every 2s in case focus is lost
+  clearInterval(barcodeFocusInterval);
+  barcodeFocusInterval = setInterval(() => {
+    if (state.selectedCamera === 'ir' && document.getElementById('ir-mode-panel').style.display !== 'none') {
+      inp.focus();
+    } else {
+      clearInterval(barcodeFocusInterval);
+    }
+  }, 2000);
+}
+
+function handleBarcodeInput(val) {
+  if (!val) return;
+  barcodeBuffer = val;
+  clearTimeout(barcodeTimer);
+  barcodeTimer = setTimeout(() => {
+    const raw = barcodeBuffer.trim();
+    barcodeBuffer = '';
+    // Reset input
+    const inp = document.getElementById('barcode-hidden-input');
+    if (inp) { inp.value = ''; inp.focus(); }
+    if (!raw) return;
+    document.getElementById('ir-scan-status').innerHTML =
+      `<span style="color:var(--gray-text)">Procesando: ${raw.substring(0,30)}...</span>`;
+    const sebango = extractSebango(raw);
+    if (sebango) {
+      document.getElementById('ir-scan-status').innerHTML =
+        `<span style="color:var(--green);font-weight:700">✅ Sebango: ${sebango}</span>`;
+      lookupSebango(sebango, raw);
+    } else {
+      document.getElementById('ir-scan-status').innerHTML =
+        `<span style="color:var(--red)">⚠️ No se encontró sebango en: ${raw.substring(0,40)}</span>`;
+    }
+  }, 200);
 }
 
 function stopCamera() {
   scanningActive = false;
+  clearInterval(barcodeFocusInterval);
   if (state.stream) {
     state.stream.getTracks().forEach(t => t.stop());
     state.stream = null;
@@ -1007,6 +1058,9 @@ function stopCamera() {
 
 let scanningActive = true;
 let lastScannedRaw = null;
+let barcodeFocusInterval = null;
+let barcodeBuffer = '';
+let barcodeTimer = null;
 
 function scanFrame() {
   if (!state.stream || !scanningActive) return;
