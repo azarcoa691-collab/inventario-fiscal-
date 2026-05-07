@@ -71,8 +71,16 @@
   }
 
   /* STEPS */
-  .screen { display: none; padding: 20px 16px; }
-  .screen.active { display: block; }
+  .screen { display: none; padding: 0; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* Full-height screens for A and B */
+  #screen-a, #screen-b {
+    height: calc(100dvh - 68px);
+    padding: 10px 12px 12px;
+    gap: 10px;
+    overflow: hidden;
+  }
 
   /* STEP LABEL */
   .step-label {
@@ -81,23 +89,29 @@
     letter-spacing: 1px;
     color: var(--blue);
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 0;
+    padding: 0 4px;
   }
-  .step-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .step-sub { font-size: 14px; color: var(--gray-text); margin-bottom: 20px; }
+  .step-title { font-size: 18px; font-weight: 700; padding: 0 4px; }
+  .step-sub { font-size: 13px; color: var(--gray-text); padding: 0 4px; }
 
   /* BUTTONS GRID */
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1; /* fill remaining vertical space */
+  }
   .btn-grid.single { grid-template-columns: 1fr; }
   .btn-grid.three { grid-template-columns: 1fr 1fr 1fr; }
 
   .area-btn {
     background: var(--white);
-    border: 1.5px solid var(--gray-border);
-    border-radius: var(--radius);
-    padding: 14px 10px;
-    font-size: 14px;
-    font-weight: 600;
+    border: 2px solid var(--gray-border);
+    border-radius: 16px;
+    padding: 12px 8px;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--dark);
     cursor: pointer;
     text-align: center;
@@ -105,22 +119,27 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 10px;
     box-shadow: var(--shadow);
+    width: 100%;
+    height: 100%;
   }
-  .area-btn .icon { font-size: 26px; }
+  .area-btn .icon { font-size: 36px; }
   .area-btn:active, .area-btn.selected {
     background: #e8f0fe;
     border-color: var(--blue);
     color: var(--blue);
+    transform: scale(0.97);
   }
+  /* Section B buttons — smaller text, more buttons per row */
   .area-btn.small {
-    padding: 10px 8px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    gap: 3px;
+    gap: 4px;
+    border-radius: 12px;
   }
-  .area-btn.small .icon { font-size: 18px; }
+  .area-btn.small .icon { font-size: 20px; }
 
   /* QR SCANNER */
   .scanner-wrap {
@@ -514,6 +533,26 @@
   }
   .mini-history .entry:last-child { border-bottom: none; }
 
+  .cam-opt {
+    flex: 1;
+    padding: 10px 6px;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 10px;
+    background: var(--white);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--gray-text);
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .cam-opt.selected {
+    background: #e8f0fe;
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .cam-opt:active { opacity: 0.7; }
+
   .info-box {
     background: #e8f0fe;
     border-radius: 10px;
@@ -547,7 +586,14 @@
     50% { opacity: 1; transform: scale(1.1); }
   }
 
-  .badge-area {
+  /* Section B grid — scrollable if too many items */
+  #secB-grid {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-content: start;
+  }
+
+  #screen-scan { padding: 20px 16px; }
     display: inline-block;
     background: var(--blue);
     color: white;
@@ -577,7 +623,7 @@
   <div class="step-title">Sección A</div>
   <div class="step-sub">¿En qué área estás trabajando?</div>
 
-  <div class="btn-grid" style="grid-template-columns: 1fr;">
+  <div class="btn-grid single">
     <button class="area-btn" onclick="selectA('PRENSAS')">
       <span class="icon">🔩</span>
       <span>PRENSAS</span>
@@ -626,12 +672,19 @@
       <span>Apunta la cámara al código QR del kanban. Mantén el código dentro del recuadro azul.</span>
     </div>
 
-    <!-- Camera activate button -->
-    <button id="cam-start-btn" onclick="activateCamera()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:var(--radius);padding:18px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+    <!-- Camera selector -->
+    <div id="cam-selector" style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="cam-opt selected" id="cam-opt-env" onclick="switchCamera('environment')" title="Cámara trasera">📷 Trasera</button>
+      <button class="cam-opt" id="cam-opt-user" onclick="switchCamera('user')" title="Cámara delantera">🤳 Delantera</button>
+      <button class="cam-opt" id="cam-opt-ir" onclick="switchCamera('ir')" title="Lector infrarrojo">🔴 IR / Barcode</button>
+    </div>
+
+    <!-- Camera activate button (shown only first time or after error) -->
+    <button id="cam-start-btn" onclick="activateCamera()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:var(--radius);padding:18px;font-size:16px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
       📷 Activar cámara
     </button>
 
-    <!-- Video wrapper (hidden until camera active) -->
+    <!-- Video wrapper -->
     <div id="scan-video-wrap" style="display:none;">
       <div class="scanner-wrap">
         <video id="qr-video" autoplay playsinline muted></video>
@@ -770,7 +823,10 @@ let state = {
   partialEnabled: false,
   capturedInSession: {},
   pendingCapture: null,
-  stream: null
+  stream: null,
+  nextConteo: 1,
+  selectedCamera: 'environment',
+  cameraPermissionGranted: false
 };
 
 function selectA(area) {
@@ -781,7 +837,13 @@ function selectA(area) {
 
   const grid = document.getElementById('secB-grid');
   grid.innerHTML = '';
-  SEC_B_MAP[area].forEach(sec => {
+  const items = SEC_B_MAP[area];
+
+  // Choose columns: 3 for PRENSAS (3 items), 3 for LOGISTICA (many), 3 for SOLDADURA (many)
+  const cols = items.length <= 3 ? items.length : 3;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  items.forEach(sec => {
     const btn = document.createElement('button');
     btn.className = 'area-btn small';
     btn.onclick = () => selectB(sec);
@@ -812,10 +874,6 @@ function goBack() {
   if (document.getElementById('screen-scan').classList.contains('active')) {
     stopCamera();
     lastScannedRaw = null;
-    document.getElementById('scan-video-wrap').style.display = 'none';
-    document.getElementById('cam-start-btn').style.display = 'flex';
-    document.getElementById('cam-start-btn').innerHTML = '📷 Activar cámara';
-    document.getElementById('cam-start-btn').disabled = false;
     document.getElementById('result-section').style.display = 'none';
     document.getElementById('scanner-section').style.display = 'block';
     document.getElementById('btn-next').style.display = 'none';
@@ -835,29 +893,52 @@ function goBack() {
 }
 
 // ---- CAMERA ----
+// selectedCamera: 'environment' | 'user' | 'ir'
+// cameraPermissionGranted: tracks if user already allowed camera this session
+
 async function startCamera() {
   resetScanUI();
   document.getElementById('scanner-section').style.display = 'block';
   document.getElementById('result-section').style.display = 'none';
-  document.getElementById('cam-start-btn').style.display = 'flex';
-  document.getElementById('scan-video-wrap').style.display = 'none';
-  document.getElementById('scan-status').innerHTML = '<span style="color:var(--gray-text)">Presiona el botón para activar la cámara</span>';
+
+  // Auto-activate if permission already granted this session
+  if (state.cameraPermissionGranted) {
+    await activateCamera();
+  } else {
+    // Show button for first time permission request
+    document.getElementById('cam-start-btn').style.display = 'flex';
+    document.getElementById('scan-video-wrap').style.display = 'none';
+    document.getElementById('scan-status').innerHTML = '<span style="color:var(--gray-text)">Presiona el botón para activar la cámara</span>';
+  }
 }
 
 async function activateCamera() {
   const btn = document.getElementById('cam-start-btn');
   btn.innerHTML = '⏳ Activando...';
   btn.disabled = true;
-  try {
-    const constraints = {
+
+  stopCamera(); // stop any existing stream first
+
+  const camMode = state.selectedCamera || 'environment';
+  let constraints;
+
+  if (camMode === 'ir') {
+    // For Zebra IR/barcode scanner — try to enumerate and pick the rear-facing imager
+    constraints = await buildIRConstraints();
+  } else {
+    constraints = {
       video: {
-        facingMode: { ideal: 'environment' },
+        facingMode: { ideal: camMode },
         width: { ideal: 1280 },
         height: { ideal: 720 }
       }
     };
+  }
+
+  try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     state.stream = stream;
+    state.cameraPermissionGranted = true;
     const video = document.getElementById('qr-video');
     video.srcObject = stream;
     await video.play();
@@ -869,12 +950,49 @@ async function activateCamera() {
   } catch(e) {
     btn.innerHTML = '📷 Activar cámara';
     btn.disabled = false;
+    btn.style.display = 'flex';
     let msg = '⚠️ Sin acceso a cámara.';
     if (e.name === 'NotAllowedError') msg = '🔒 Permiso denegado. Ve a Configuración del navegador y permite la cámara.';
-    else if (e.name === 'NotFoundError') msg = '📵 No se encontró cámara en este dispositivo.';
+    else if (e.name === 'NotFoundError') msg = '📵 Cámara no encontrada. Prueba otra opción.';
     else if (e.name === 'NotReadableError') msg = '⚠️ La cámara está en uso por otra app.';
+    else if (e.name === 'OverconstrainedError') msg = '⚠️ Esta cámara no está disponible. Prueba otra.';
     document.getElementById('scan-status').innerHTML = `<span style="color:var(--red);font-size:13px">${msg}</span>`;
   }
+}
+
+async function buildIRConstraints() {
+  // Try to find a Zebra-style imager camera by enumerating devices
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+    // Zebra TC devices typically have the barcode imager as the last or a specifically labeled camera
+    // Try to find one with "rear" or use deviceId of second/third camera
+    const zebraImager = videoDevices.find(d =>
+      d.label.toLowerCase().includes('imager') ||
+      d.label.toLowerCase().includes('barcode') ||
+      d.label.toLowerCase().includes('rear') ||
+      d.label.toLowerCase().includes('back')
+    );
+    if (zebraImager) {
+      return { video: { deviceId: { exact: zebraImager.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } };
+    }
+    // Fallback: pick last video device (often the imager on Zebra)
+    if (videoDevices.length > 1) {
+      return { video: { deviceId: { exact: videoDevices[videoDevices.length - 1].deviceId } } };
+    }
+  } catch(e) {}
+  // Default fallback to environment
+  return { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } };
+}
+
+async function switchCamera(mode) {
+  state.selectedCamera = mode;
+  // Update button styles
+  ['env','user','ir'].forEach(k => document.getElementById('cam-opt-' + k)?.classList.remove('selected'));
+  const map = { environment: 'env', user: 'user', ir: 'ir' };
+  document.getElementById('cam-opt-' + map[mode])?.classList.add('selected');
+  // Re-activate with new camera
+  await activateCamera();
 }
 
 function stopCamera() {
@@ -1144,12 +1262,10 @@ function rescan() {
   stopCamera();
   document.getElementById('scanner-section').style.display = 'block';
   document.getElementById('result-section').style.display = 'none';
-  document.getElementById('cam-start-btn').style.display = 'flex';
-  document.getElementById('cam-start-btn').innerHTML = '📷 Activar cámara';
-  document.getElementById('cam-start-btn').disabled = false;
-  document.getElementById('scan-video-wrap').style.display = 'none';
-  document.getElementById('scan-status').innerHTML = '<span style="color:var(--gray-text)">Presiona el botón para activar la cámara</span>';
+  document.getElementById('scan-status').innerHTML = `<div class="scanning-indicator"><div class="dot-pulse"></div> Iniciando cámara...</div>`;
   hideAlerts();
+  // Auto-activate — permission already granted
+  activateCamera();
 }
 
 function resetScanUI() {
