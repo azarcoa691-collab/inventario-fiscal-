@@ -811,6 +811,19 @@ function showScreen(id) {
 function goBack() {
   if (document.getElementById('screen-scan').classList.contains('active')) {
     stopCamera();
+    lastScannedRaw = null;
+    document.getElementById('scan-video-wrap').style.display = 'none';
+    document.getElementById('cam-start-btn').style.display = 'flex';
+    document.getElementById('cam-start-btn').innerHTML = '📷 Activar cámara';
+    document.getElementById('cam-start-btn').disabled = false;
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('scanner-section').style.display = 'block';
+    document.getElementById('btn-next').style.display = 'none';
+    document.getElementById('btn-capture').style.display = 'flex';
+    document.getElementById('btn-capture').disabled = false;
+    document.getElementById('btn-capture').textContent = '💾 Capturar';
+    document.getElementById('btn-rescan').style.display = 'block';
+    hideAlerts();
     showScreen('screen-b');
     document.getElementById('header-sub').textContent = state.secA;
   } else if (document.getElementById('screen-b').classList.contains('active')) {
@@ -819,7 +832,6 @@ function goBack() {
     document.getElementById('header-sub').textContent = 'Selecciona el área de trabajo';
     state.secA = null;
   }
-  resetScanUI();
 }
 
 // ---- CAMERA ----
@@ -866,10 +878,13 @@ async function activateCamera() {
 }
 
 function stopCamera() {
+  scanningActive = false;
   if (state.stream) {
     state.stream.getTracks().forEach(t => t.stop());
     state.stream = null;
   }
+  const video = document.getElementById('qr-video');
+  if (video) { video.srcObject = null; }
 }
 
 let scanningActive = true;
@@ -915,14 +930,22 @@ function scanFrame() {
 }
 
 function extractSebango(qrText) {
-  // Look for pattern: letter (K,T,A,H,X) followed by exactly 3 digits
+  // QR format observed: "0002 57218-0C020    K02600024"
+  // Sebango is K026, followed by more digits (qty etc) — extract first K/T/A/H/X + exactly 3 digits
+  // Try word boundary first
   const match = qrText.match(/\b([KTAHXktahx]\d{3})\b/);
   if (match) return match[1].toUpperCase();
-  // Also try common separator formats
-  const match2 = qrText.match(/[^a-zA-Z]([KTAHXktahx]\d{3})[^a-zA-Z0-9]/);
-  if (match2) return match2[1].toUpperCase();
-  const match3 = qrText.match(/^([KTAHXktahx]\d{3})/);
-  if (match3) return match3[1].toUpperCase();
+
+  // Try: letter + 3 digits possibly followed by more digits/chars — take only first 3 digits
+  const match2 = qrText.match(/(?<![A-Za-z])([KTAHXktahx])(\d{3})\d*/);
+  if (match2) return (match2[1] + match2[2]).toUpperCase();
+
+  // Try at start of a token after space
+  const tokens = qrText.split(/[\s,;|\t]+/);
+  for (const token of tokens) {
+    const m = token.match(/^([KTAHXktahx]\d{3})/i);
+    if (m) return m[1].toUpperCase();
+  }
   return null;
 }
 
@@ -940,7 +963,7 @@ async function lookupSebango(sebango, rawQR) {
   document.getElementById('btn-capture').disabled = true;
 
   try {
-    const url = `${API_URL}?action=lookup&sebango=${encodeURIComponent(sebango)}`;
+    const url = `${API_URL}?action=lookup&sebango=${encodeURIComponent(sebango)}&secA=${encodeURIComponent(state.secA)}&secB=${encodeURIComponent(state.secB)}`;
     const resp = await fetch(url, { redirect: 'follow' });
     const text = await resp.text();
     const data = JSON.parse(text);
@@ -948,9 +971,14 @@ async function lookupSebango(sebango, rawQR) {
       state.sebango = sebango;
       state.qpc = parseInt(data.qpc) || 0;
       state.ubicacion = data.ubicacion || sebango;
+      state.nextConteo = data.nextConteo || 1;
 
       document.getElementById('res-ubicacion').textContent = state.ubicacion;
       document.getElementById('res-qpc').textContent = state.qpc;
+
+      // Show which conteo number this will be
+      const conteoLabel = state.nextConteo === 1 ? '1er Conteo' : state.nextConteo === 2 ? '2do Conteo' : '3er Conteo';
+      document.getElementById('res-secA').textContent = state.secA + ' — ' + conteoLabel;
 
       setupInputs();
       document.getElementById('btn-capture').disabled = false;
@@ -1038,47 +1066,42 @@ function updateTotal() {
 async function doCapture() {
   const sebango = state.sebango;
   const cajas = parseInt(document.getElementById('inp-cajas').value) || 0;
-  const total = parseInt(document.getElementById('total-pzas').textContent) || 0;
+  const allowPartial = state.secA !== 'LOGISTICA' && state.qpc < 30 && state.partialEnabled;
+  const parcialPzas = allowPartial ? (parseInt(document.getElementById('inp-parcial').value) || 0) : 0;
 
-  // Check duplicate
   if (state.capturedInSession[sebango] !== undefined) {
-    state.pendingCapture = { sebango, cajas, total };
+    state.pendingCapture = { sebango, cajas, parcialPzas };
     openGLModal();
     return;
   }
-  await saveCapture(sebango, cajas, total);
+  await saveCapture(sebango, cajas, parcialPzas);
 }
 
-async function saveCapture(sebango, cajas, total) {
+async function saveCapture(sebango, cajas, parcialPzas) {
   document.getElementById('btn-capture').disabled = true;
   document.getElementById('btn-capture').textContent = '⏳ Guardando...';
   hideAlerts();
   try {
-    const body = {
-      action: 'save',
-      sebango,
-      secA: state.secA,
-      secB: state.secB,
-      cajas,
-      total,
-      parcial: state.partialEnabled ? 1 : 0
-    };
+    const conteo = state.nextConteo || 1;
     const params = new URLSearchParams({
       action: 'save',
       sebango,
       secA: state.secA,
       secB: state.secB,
       cajas: cajas,
-      total: total,
-      parcial: state.partialEnabled ? 1 : 0
+      parcialPzas: parcialPzas,
+      conteo: conteo
     });
     const resp = await fetch(`${API_URL}?${params.toString()}`, { redirect: 'follow' });
     const text = await resp.text();
     const data = JSON.parse(text);
     if (data.success || data.ok || resp.ok) {
-      state.capturedInSession[sebango] = total;
-      showAlert('success', `✅ Captura exitosa — ${sebango}: ${total} pzas (${cajas} cajas)`);
-      addMiniHistory(sebango, total, cajas);
+      state.capturedInSession[sebango] = cajas;
+      const resumen = parcialPzas > 0
+        ? `${cajas} cajas + ${parcialPzas} pzas parcial`
+        : `${cajas} cajas`;
+      showAlert('success', `✅ Captura exitosa — ${sebango}: ${resumen} (Conteo ${conteo})`);
+      addMiniHistory(sebango, cajas, parcialPzas, conteo);
       document.getElementById('btn-capture').style.display = 'none';
       document.getElementById('btn-next').style.display = 'flex';
       document.getElementById('btn-rescan').style.display = 'none';
@@ -1092,13 +1115,14 @@ async function saveCapture(sebango, cajas, total) {
   }
 }
 
-function addMiniHistory(sebango, total, cajas) {
+function addMiniHistory(sebango, cajas, parcialPzas, conteo) {
   const wrap = document.getElementById('mini-history-wrap');
   const hist = document.getElementById('mini-history');
   wrap.style.display = 'block';
   const entry = document.createElement('div');
   entry.className = 'entry';
-  entry.innerHTML = `<span><strong>${sebango}</strong></span><span>${cajas} cajas → <strong>${total} pzas</strong></span>`;
+  const detalle = parcialPzas > 0 ? `${cajas} cajas + ${parcialPzas} pzas` : `${cajas} cajas`;
+  entry.innerHTML = `<span><strong>${sebango}</strong> <small style="color:var(--gray-text)">#${conteo}</small></span><span>${detalle}</span>`;
   hist.insertBefore(entry, hist.firstChild);
   if (hist.children.length > 5) hist.removeChild(hist.lastChild);
 }
@@ -1173,7 +1197,7 @@ function authorizeGL() {
   if (pc) {
     state.pendingCapture = null;
     delete state.capturedInSession[pc.sebango];
-    saveCapture(pc.sebango, pc.cajas, pc.total);
+    saveCapture(pc.sebango, pc.cajas, pc.parcialPzas);
   }
 }
 
