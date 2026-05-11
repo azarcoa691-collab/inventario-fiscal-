@@ -1154,9 +1154,9 @@ function finalizeGLAuth() {
   // Remove session key so next save is allowed; advance conteo
   const key=sessionKey();
   delete state.capturedInSession[key];
-  state.nextConteo=(state.nextConteo||1)+1;
+  state.nextConteo=(state.nextConteo||1) 1;
   state.glUnlocked=true;
-  const cl=state.nextConteo===2?'2do Conteo':'3er Conteo';
+  const cl=state.nextConteo===1?'2do Conteo':'3er Conteo';
   document.getElementById('res-secA').textContent=state.secA+' — '+cl;
   document.getElementById('dup-banner').classList.remove('show');
   document.getElementById('capture-form').style.display='block';
