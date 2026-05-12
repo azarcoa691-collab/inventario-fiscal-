@@ -4,15 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Inventario Fiscal</title>
-<!-- jsQR loaded async so it doesn't block render -->
-<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js" async></script>
 <style>
 :root{
   --blue:#1a73e8;--blue-d:#1557b0;--green:#1e8e3e;--green-l:#e6f4ea;
   --red:#c5221f;--red-l:#fce8e6;--orange:#e37400;--orange-l:#fef3e2;
   --bg:#f8f9fa;--border:#dadce0;--txt:#5f6368;--dark:#202124;--white:#fff;
   --r:12px;--sh:0 2px 8px rgba(0,0,0,.12);
-  --hh:60px; /* header height */
+  --hh:60px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
@@ -39,45 +37,64 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
   border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;flex-shrink:0;
 }
 
-/* ── SCREENS ── */
-.screens{
-  position:fixed;top:var(--hh);left:0;right:0;bottom:0;overflow:hidden;
-}
-.screen{
-  position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:14px;display:none;
-}
-.screen.active{display:block}
+/* ══════════════════════════════════════════
+   UNIFIED SCREEN SYSTEM
+   Todas las pantallas usan el mismo sistema:
+   - position:fixed, inset = debajo del header
+   - display:none por defecto
+   - display:flex cuando tienen clase .active
+   ══════════════════════════════════════════ */
+.screens{position:fixed;top:var(--hh);left:0;right:0;bottom:0;}
 
-/* ── FULLSCREEN BUTTON GRIDS (Section A & B) ── */
-.full-screen{
-  position:absolute;inset:0;padding:12px;
-  display:none;flex-direction:column;gap:10px;
+.screen{
+  position:absolute;inset:0;
+  display:none;          /* SIEMPRE oculto por defecto */
+  flex-direction:column;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
-.full-screen.active{display:flex}
-.sec-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase}
-.sec-title{font-size:18px;font-weight:800}
-.btn-grid{display:grid;gap:10px;flex:1}
+/* La pantalla activa se muestra */
+.screen.active{ display:flex; }
+
+/* Pantallas de botones (A, B) — flex sin scroll */
+.screen.btn-screen{overflow:hidden;}
+
+/* Pantalla de login — centrada */
+#screen-login{align-items:center;justify-content:center;padding:20px;gap:14px;text-align:center;background:var(--bg);}
+
+/* Pantalla de scan — scroll con padding */
+#screen-scan{padding:14px;background:var(--bg);}
+
+/* Pantallas A y B — padding + flex column */
+#screen-a,#screen-b{padding:12px;gap:10px;background:var(--bg);}
+
+/* ── GRIDS DE BOTONES ── */
+.sec-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;flex-shrink:0}
+.sec-title{font-size:18px;font-weight:800;flex-shrink:0}
+.btn-grid{display:grid;gap:10px;flex:1;min-height:0}
+#secb-grid{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;display:grid;gap:10px;}
 .area-btn{
   background:var(--white);border:2px solid var(--border);border-radius:14px;
   font-size:15px;font-weight:700;color:var(--dark);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:8px;transition:background .1s,border-color .1s;width:100%;
-  -webkit-tap-highlight-color:rgba(26,115,232,.15);
 }
 .area-btn .ico{font-size:34px}
 .area-btn:active{background:#e8f0fe;border-color:var(--blue);color:var(--blue)}
 .area-btn.small{font-size:13px;font-weight:700;border-radius:10px;gap:0}
 
+/* ── LOGIN CARD ── */
+.login-card{background:var(--white);border:2px dashed var(--blue);border-radius:20px;padding:24px 20px;width:100%;max-width:320px}
+.login-ico{font-size:52px;margin-bottom:10px}
+.login-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--txt);margin-bottom:16px}
+
 /* ── CAMERA ── */
 .cam-selector{display:flex;gap:8px;margin-bottom:10px}
-.cam-opt{
-  flex:1;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;
-  background:var(--white);font-size:12px;font-weight:700;cursor:pointer;color:var(--txt);
-}
+.cam-opt{flex:1;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-size:12px;font-weight:700;cursor:pointer;color:var(--txt)}
 .cam-opt.on{background:#e8f0fe;border-color:var(--blue);color:var(--blue)}
 .scan-wrap{position:relative;border-radius:var(--r);overflow:hidden;background:#000;margin-bottom:10px}
-.scan-wrap video{width:100%;display:block;max-height:260px;object-fit:cover}
+.scan-wrap video{width:100%;display:block;max-height:240px;object-fit:cover}
 .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .scan-frame{width:180px;height:180px;position:relative}
 .sf-c{position:absolute;width:26px;height:26px;border-color:#00e5ff;border-style:solid}
@@ -85,22 +102,21 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .sf-tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
 .sf-br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
 .sf-bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
-.sf-line{
-  position:absolute;left:4px;right:4px;height:2px;
-  background:linear-gradient(90deg,transparent,#00e5ff,transparent);
-  animation:scan 1.8s linear infinite;top:0
-}
+.sf-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);animation:scan 1.8s linear infinite;top:0}
 @keyframes scan{0%{top:4px}100%{top:172px}}
-.scan-hint{
-  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px;white-space:nowrap
-}
+.scan-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px;white-space:nowrap}
 .scan-status{font-size:13px;color:var(--txt);text-align:center;padding:6px 0;min-height:28px}
 .scan-status.ok{color:var(--green);font-weight:700}
 .scan-status.err{color:var(--red);font-weight:700}
 .pulse-wrap{display:flex;align-items:center;justify-content:center;gap:8px}
 .dot{width:9px;height:9px;background:var(--blue);border-radius:50%;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+
+/* ── IR MODE ── */
+.ir-panel{background:var(--white);border:2px dashed #ffb74d;border-radius:var(--r);padding:24px;text-align:center;margin-bottom:10px}
+.ir-panel .ir-ico{font-size:48px;margin-bottom:8px}
+.ir-panel .ir-t{font-size:15px;font-weight:700;margin-bottom:4px}
+.ir-panel .ir-s{font-size:12px;color:var(--txt)}
 
 /* ── RESULT CARD ── */
 .card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
@@ -111,10 +127,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .chip.blue{background:#e8f0fe;border-color:#b3c8f8;color:var(--blue-d)}
 .chip.orange{background:var(--orange-l);border-color:#f8d999;color:#7a3f00}
 .card-meta{font-size:11px;color:var(--txt)}
-.conteo-badge{
-  display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;
-  background:#e8f0fe;color:var(--blue-d);margin-top:4px
-}
+.conteo-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#e8f0fe;color:var(--blue-d);margin-top:4px}
 
 /* ── INPUTS ── */
 .inp-section{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
@@ -122,20 +135,11 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .inp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .inp-row label{font-size:13px;font-weight:600;color:var(--txt);width:54px;flex-shrink:0}
 .num-wrap{flex:1;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--white)}
-.num-btn{
-  width:44px;height:48px;background:var(--bg);border:none;
-  font-size:22px;font-weight:700;cursor:pointer;color:var(--dark);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
+.num-btn{width:44px;height:48px;background:var(--bg);border:none;font-size:22px;font-weight:700;cursor:pointer;color:var(--dark);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .num-btn:active{background:var(--border)}
-.num-inp{
-  flex:1;height:48px;border:none;outline:none;text-align:center;
-  font-size:24px;font-weight:800;color:var(--dark);background:transparent;min-width:0
-}
-/* remove number arrows */
+.num-inp{flex:1;height:48px;border:none;outline:none;text-align:center;font-size:24px;font-weight:800;color:var(--dark);background:transparent;min-width:0}
 .num-inp::-webkit-outer-spin-button,.num-inp::-webkit-inner-spin-button{-webkit-appearance:none}
 .num-inp[type=number]{-moz-appearance:textfield}
-
 .toggle-row{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer}
 .toggle{width:42px;height:22px;background:var(--border);border-radius:11px;position:relative;transition:background .2s;flex-shrink:0}
 .toggle.on{background:var(--blue)}
@@ -146,12 +150,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .total-box .tv{font-size:26px;font-weight:800;color:var(--blue)}
 
 /* ── BUTTONS ── */
-.btn{
-  width:100%;border:none;border-radius:var(--r);padding:15px;
-  font-size:16px;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;
-  transition:opacity .15s,transform .1s;
-}
+.btn{width:100%;border:none;border-radius:var(--r);padding:15px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;transition:opacity .15s,transform .1s}
 .btn:active{opacity:.85;transform:scale(.98)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-blue{background:var(--blue);color:#fff}
@@ -159,69 +158,36 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .btn-outline{background:var(--white);border:1.5px solid var(--border);color:var(--txt)}
 
 /* ── ALERTS ── */
-.alert{
-  border-radius:var(--r);padding:12px 14px;margin-bottom:10px;
-  font-size:13px;font-weight:600;display:none;align-items:center;gap:10px;
-  animation:slideIn .25s ease;
-}
+.alert{border-radius:var(--r);padding:12px 14px;margin-bottom:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:10px;animation:slideIn .25s ease}
 .alert.show{display:flex}
 .alert.ok{background:var(--green-l);color:#0a5224;border:1.5px solid #a8d5b5}
 .alert.err{background:var(--red-l);color:#8a1a17;border:1.5px solid #f5b7b5}
 .alert.warn{background:var(--orange-l);color:#7a4a00;border:1.5px solid #f8d18a}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .alert-ico{font-size:20px;flex-shrink:0}
+.unlock-banner{background:var(--orange-l);border:1.5px solid #f8d18a;border-radius:var(--r);padding:10px 14px;display:none;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#7a4a00;margin-bottom:10px}
+.unlock-banner.show{display:flex}
+
+/* ── BREADCRUMB ── */
+.bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt);margin-bottom:10px;background:var(--white);border-radius:8px;padding:7px 12px;border:1px solid var(--border)}
+.bc .crumb{font-weight:700;color:var(--blue)}
 
 /* ── HISTORY ── */
 .hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
 .hist-item:last-child{border:none}
 
 /* ── GL MODAL ── */
-.modal-bg{
-  position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:300;display:none;align-items:center;justify-content:center;padding:16px;
-}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.show{display:flex}
-.modal{
-  background:var(--white);border-radius:16px;padding:20px;
-  width:100%;max-width:360px;animation:mIn .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.25);
-  max-height:90vh;overflow-y:auto;
-}
+.modal{background:var(--white);border-radius:16px;padding:20px;width:100%;max-width:360px;animation:mIn .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
 @keyframes mIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
 .modal h2{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--red)}
 .modal p{font-size:13px;color:var(--txt);margin-bottom:14px;line-height:1.5}
-.modal select,.modal input[type=number]{
-  width:100%;border:1.5px solid var(--border);border-radius:10px;
-  padding:11px 12px;font-size:15px;margin-bottom:10px;background:var(--white);color:var(--dark);outline:none;
-}
+.modal select,.modal input[type=number]{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:15px;margin-bottom:10px;background:var(--white);color:var(--dark);outline:none}
 .modal select:focus,.modal input:focus{border-color:var(--blue)}
 .modal-btns{display:flex;gap:10px;margin-top:4px}
 .btn-cancel{flex:1;padding:12px;border:1.5px solid var(--border);background:var(--white);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;color:var(--txt)}
 .btn-ok{flex:1;padding:12px;border:none;background:var(--blue);border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;color:#fff}
-
-/* ── IR MODE ── */
-.ir-panel{background:var(--white);border:2px dashed #ffb74d;border-radius:var(--r);padding:24px;text-align:center;margin-bottom:10px}
-.ir-panel .ir-ico{font-size:48px;margin-bottom:8px}
-.ir-panel .ir-t{font-size:15px;font-weight:700;margin-bottom:4px}
-.ir-panel .ir-s{font-size:12px;color:var(--txt)}
-
-/* ── LOGIN ── */
-#screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
-#screen-login .login-card{background:var(--white);border:2px dashed var(--blue);border-radius:20px;padding:24px 20px;width:100%;max-width:320px}
-.login-ico{font-size:52px;margin-bottom:10px}
-.login-title{font-size:18px;font-weight:800;margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--txt);margin-bottom:16px}
-/* compact login scanner */
-#login-scanner-wrap .scan-wrap video{max-height:200px}
-
-/* ── BREADCRUMB ── */
-.bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt);margin-bottom:10px;background:var(--white);border-radius:8px;padding:7px 12px;border:1px solid var(--border)}
-.bc .crumb{font-weight:700;color:var(--blue)}
-
-/* ── SCROLLABLE SEC B ── */
-#secb-grid{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
-
-/* ── UNLOCK BANNER ── */
-.unlock-banner{background:var(--orange-l);border:1.5px solid #f8d18a;border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#7a4a00;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -240,7 +206,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
   <button class="back-btn" id="back-btn" style="display:none" onclick="goBack()">←</button>
 </div>
 
-<!-- SCREENS CONTAINER -->
+<!-- SCREENS — todos usan la misma clase .screen -->
 <div class="screens">
 
   <!-- ══ LOGIN ══ -->
@@ -288,7 +254,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
   </div>
 
   <!-- ══ SECTION A ══ -->
-  <div class="full-screen" id="screen-a">
+  <div class="screen btn-screen" id="screen-a">
     <div class="sec-label">Paso 1 de 3</div>
     <div class="sec-title">Sección A — Área</div>
     <div class="btn-grid" style="grid-template-columns:1fr">
@@ -299,10 +265,10 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
   </div>
 
   <!-- ══ SECTION B ══ -->
-  <div class="full-screen" id="screen-b">
+  <div class="screen btn-screen" id="screen-b">
     <div class="sec-label">Paso 2 de 3</div>
     <div class="sec-title" id="secb-title">Sección B</div>
-    <div class="btn-grid" id="secb-grid" style="grid-template-columns:repeat(3,1fr)"></div>
+    <div id="secb-grid"></div>
   </div>
 
   <!-- ══ SCAN & CAPTURE ══ -->
@@ -311,7 +277,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
     <div id="alert-ok"   class="alert ok"><span class="alert-ico">✅</span><span id="alert-ok-t"></span></div>
     <div id="alert-err"  class="alert err"><span class="alert-ico">❌</span><span id="alert-err-t"></span></div>
     <div id="alert-warn" class="alert warn"><span class="alert-ico">⚠️</span><span id="alert-warn-t"></span></div>
-    <div id="unlock-banner" class="unlock-banner" style="display:none">🔓 <span id="unlock-txt"></span></div>
+    <div id="unlock-banner" class="unlock-banner"><span id="unlock-txt"></span></div>
 
     <!-- SCANNER SECTION -->
     <div id="scan-section">
@@ -320,7 +286,6 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         <button class="cam-opt" id="cc-ir"  onclick="switchCam('ir')">🔴 Lector</button>
       </div>
 
-      <!-- Camera mode -->
       <div id="cam-wrap" style="display:none">
         <div class="scan-wrap">
           <video id="scan-vid" autoplay playsinline muted></video>
@@ -336,7 +301,6 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         <canvas id="scan-canvas" style="display:none"></canvas>
       </div>
 
-      <!-- IR/Barcode mode -->
       <div id="ir-wrap" style="display:none">
         <div class="ir-panel">
           <div class="ir-ico">🔴</div>
@@ -427,13 +391,11 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
       <button class="cam-opt" id="glm-qr" onclick="setGLMode('qr')">📷 QR Credencial</button>
     </div>
 
-    <!-- Manual -->
     <div id="gl-manual">
       <select id="gl-sel"><option value="">— Selecciona GL —</option></select>
       <input type="number" id="gl-emp-inp" placeholder="N° empleado del GL" inputmode="numeric">
     </div>
 
-    <!-- QR -->
     <div id="gl-qr" style="display:none">
       <div class="scan-wrap" id="gl-scan-wrap" style="margin-bottom:8px">
         <video id="gl-vid" autoplay playsinline muted style="max-height:160px;object-fit:cover"></video>
@@ -465,6 +427,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 
 <script>
 'use strict';
+
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
@@ -504,35 +467,24 @@ const SECB = {
 };
 
 // ══════════════════════════════════════════════════════════
-// STATE — single source of truth
+// STATE
 // ══════════════════════════════════════════════════════════
 const S = {
-  screen: 'login',    // login | a | b | scan
-  user: null,         // {e, n, a}
-  secA: null,
-  secB: null,
-  seb: null,          // scanned sebango
-  qpc: 0,
-  ub: null,           // ubicacion
-  conteo: 1,          // next conteo to write
+  screen: 'login',
+  user: null,
+  secA: null, secB: null,
+  seb: null, qpc: 0, ub: null, conteo: 1,
   partial: false,
-  session: {},        // key='seb||a||b' → conteo already saved
-  pending: null,      // pending capture awaiting GL auth
+  session: {},
+  pending: null,
   // camera
-  stream: null,
-  camActive: false,
-  scanMode: 'env',    // env | ir
-  scanning: false,
-  lastRaw: null,
-  // login camera
-  loginStream: null,
-  loginScanning: false,
-  loginMode: 'env',
+  stream: null, camActive: false, scanMode: 'env',
+  scanning: false, lastRaw: null,
+  // login
+  loginStream: null, loginScanning: false, loginMode: 'env',
   // GL modal
-  glStream: null,
-  glScanning: false,
-  glCamMode: 'env',
-  glAuthed: null,     // GL user who authorized
+  glStream: null, glScanning: false, glCamMode: 'env', glAuthed: null,
+  _irFocus: null,
 };
 
 // ══════════════════════════════════════════════════════════
@@ -540,28 +492,20 @@ const S = {
 // ══════════════════════════════════════════════════════════
 const $ = id => document.getElementById(id);
 
-function show(id){ $(id).style.display = 'block' }
-function hide(id){ $(id).style.display = 'none'  }
-function flex(id){ $(id).style.display = 'flex'  }
-
-function showScreen(s) {
-  // hide all
-  ['login','a','b','scan'].forEach(id => {
-    const el = $('screen-' + id);
-    if (!el) return;
-    el.classList.remove('active');
-    // full-screen type needs flex not block
-  });
-  S.screen = s;
-  const el = $('screen-' + s);
-  el.classList.add('active');
+function showScreen(name) {
+  // Oculta TODAS las pantallas quitando .active
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  // Muestra solo la solicitada
+  const el = $('screen-' + name);
+  if (el) el.classList.add('active');
+  S.screen = name;
 }
 
 function setHdrSub(t){ $('hdr-sub').textContent = t }
 
 function hideAlerts(){
   ['ok','err','warn'].forEach(t => $('alert-'+t).classList.remove('show'));
-  hide('unlock-banner');
+  $('unlock-banner').classList.remove('show');
 }
 function showAlert(type, msg, persist){
   hideAlerts();
@@ -569,20 +513,19 @@ function showAlert(type, msg, persist){
   $('alert-'+type).classList.add('show');
   if (!persist) setTimeout(() => $('alert-'+type).classList.remove('show'), 5000);
 }
-function showUnlock(msg){ $('unlock-txt').textContent = msg; flex('unlock-banner') }
+function showUnlock(msg){
+  $('unlock-txt').textContent = msg;
+  $('unlock-banner').classList.add('show');
+}
 
-// Extract 5-digit employee number starting with 1
 function extractEmp(raw){
   const m = raw.match(/\b(1\d{4})\b/);
   return m ? parseInt(m[1]) : null;
 }
 
-// Extract sebango: K/T/A/H/X + exactly 3 digits
 function extractSeb(raw){
-  // Try word boundary
   let m = raw.match(/\b([KTAHXktahx]\d{3})\b/);
   if (m) return m[1].toUpperCase();
-  // Try: letter+3digits possibly followed by more — take only 3
   m = raw.match(/(?<![A-Za-z])([KTAHXktahx])(\d{3})/);
   if (m) return (m[1]+m[2]).toUpperCase();
   return null;
@@ -602,9 +545,9 @@ function goBack(){
     S.secA = null;
     showScreen('a');
   } else if (S.screen === 'a'){
-    // logout
     S.user = null; S.session = {};
-    hide('hdr-badge'); $('back-btn').style.display = 'none';
+    $('hdr-badge').style.display = 'none';
+    $('back-btn').style.display = 'none';
     setHdrSub('Identificación requerida');
     resetLoginUI();
     showScreen('login');
@@ -616,7 +559,8 @@ function goBack(){
 // ══════════════════════════════════════════════════════════
 function resetLoginUI(){
   stopLoginCam();
-  hide('login-scanner-wrap'); hide('login-ir-wrap');
+  $('login-scanner-wrap').style.display = 'none';
+  $('login-ir-wrap').style.display = 'none';
   $('login-btn').style.display = 'flex';
   $('login-btn').textContent = '📷 Activar cámara';
   $('login-btn').disabled = false;
@@ -635,15 +579,15 @@ async function startLoginScan(){
   $('login-status').innerHTML = '<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial...</div>';
 
   if (S.loginMode === 'ir'){
-    hide('login-scanner-wrap');
-    show('login-ir-wrap');
+    $('login-scanner-wrap').style.display = 'none';
+    $('login-ir-wrap').style.display = 'block';
     setTimeout(() => { $('login-ir-inp').value=''; $('login-ir-inp').focus(); }, 50);
     S.loginScanning = true;
     return;
   }
 
-  hide('login-ir-wrap');
-  show('login-scanner-wrap');
+  $('login-ir-wrap').style.display = 'none';
+  $('login-scanner-wrap').style.display = 'block';
   try {
     S.loginStream = await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
@@ -664,7 +608,6 @@ function loginScanLoop(){
   if (!S.loginScanning) return;
   const vid = $('login-vid'), cvs = $('login-canvas');
   if (vid.readyState < 2){ requestAnimationFrame(loginScanLoop); return; }
-  // crop center square
   const sz = Math.floor(Math.min(vid.videoWidth, vid.videoHeight) * 0.6);
   cvs.width = sz; cvs.height = sz;
   const ctx = cvs.getContext('2d', {willReadFrequently:true});
@@ -698,16 +641,13 @@ function onLoginBarcode(val){
 }
 
 function loginSuccess(emp){
-  // Any employee with a valid 5-digit number starting with 1 can log in
-  // Check if they're in the GL list for display purposes, otherwise create generic user
   stopLoginCam();
   const known = GL.find(g => g.e === emp);
   S.user = known || {e: emp, n: `Empleado #${emp}`, a: 'N/A'};
-  // Show user in header
   const name = S.user.n.split(' ').slice(0,2).join(' ');
   $('hdr-name').textContent = name;
   $('hdr-emp').textContent = '#' + S.user.e;
-  flex('hdr-badge');
+  $('hdr-badge').style.display = 'flex';
   $('back-btn').style.display = 'block';
   setHdrSub('Selecciona el área');
   showScreen('a');
@@ -720,11 +660,9 @@ function selectA(area){
   S.secA = area;
   setHdrSub(area);
   $('secb-title').textContent = `${area} — Ubicación`;
-  // Build section B buttons
   const grid = $('secb-grid');
   const items = SECB[area];
   grid.innerHTML = '';
-  // dynamic columns: 1 col if ≤1, 2 if ≤2, 3 otherwise
   const cols = items.length <= 1 ? 1 : items.length <= 2 ? 2 : 3;
   grid.style.gridTemplateColumns = `repeat(${cols},1fr)`;
   items.forEach(sec => {
@@ -743,9 +681,7 @@ function selectB(sec){
   setHdrSub(S.secA + ' › ' + sec);
   resetScanScreen();
   showScreen('scan');
-  // Auto-activate if camera permission already granted
-  if (S.camActive || S.scanMode === 'ir') activateCam();
-  else { $('cam-btn').style.display = 'flex'; }
+  activateCam();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -754,7 +690,8 @@ function selectB(sec){
 function resetScanScreen(){
   S.seb = null; S.qpc = 0; S.ub = null; S.scanning = false; S.lastRaw = null;
   hideAlerts();
-  show('scan-section'); hide('result-section');
+  $('scan-section').style.display = 'block';
+  $('result-section').style.display = 'none';
   $('btn-next').style.display = 'none';
   $('btn-cap').style.display = 'flex';
   $('btn-cap').disabled = false;
@@ -778,15 +715,14 @@ function switchCam(m){
 
 async function activateCam(){
   stopScanCam();
-  hide('cam-btn');
+  $('cam-btn').style.display = 'none';
   setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Activando...</div>');
 
   if (S.scanMode === 'ir'){
-    hide('cam-wrap');
-    show('ir-wrap');
+    $('cam-wrap').style.display = 'none';
+    $('ir-wrap').style.display = 'block';
     setTimeout(()=>{ $('scan-ir-inp').value=''; $('scan-ir-inp').focus(); }, 50);
     setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Lector activo — presiona el gatillo</div>');
-    // keep focus
     clearInterval(S._irFocus);
     S._irFocus = setInterval(()=>{
       if(S.scanMode==='ir' && $('screen-scan').classList.contains('active'))
@@ -796,8 +732,8 @@ async function activateCam(){
     return;
   }
 
-  hide('ir-wrap');
-  show('cam-wrap');
+  $('ir-wrap').style.display = 'none';
+  $('cam-wrap').style.display = 'block';
   try {
     S.stream = await navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
@@ -820,10 +756,15 @@ async function activateCam(){
   }
 }
 
+// ─── OPTIMIZACIÓN: throttle con setTimeout en lugar de rAF continuo ───
+let _scanThrottle = null;
 function scanLoop(){
   if (!S.scanning || !S.stream) return;
   const vid = $('scan-vid'), cvs = $('scan-canvas');
-  if (vid.readyState < 2){ requestAnimationFrame(scanLoop); return; }
+  if (vid.readyState < 2){
+    _scanThrottle = setTimeout(scanLoop, 80);
+    return;
+  }
   const sz = Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.55);
   cvs.width = sz; cvs.height = sz;
   const ctx = cvs.getContext('2d',{willReadFrequently:true});
@@ -833,14 +774,16 @@ function scanLoop(){
     if (code?.data && code.data !== S.lastRaw){
       S.lastRaw = code.data;
       const seb = extractSeb(code.data);
-      if (seb){ S.scanning = false; onSebango(seb); return; }
+      if (seb){ S.scanning = false; clearTimeout(_scanThrottle); onSebango(seb); return; }
     }
   }
-  requestAnimationFrame(scanLoop);
+  // ~15 fps es suficiente para QR — reduce CPU y mejora velocidad percibida
+  _scanThrottle = setTimeout(scanLoop, 66);
 }
 
 function stopScanCam(){
   S.scanning = false; S.camActive = false;
+  clearTimeout(_scanThrottle);
   clearInterval(S._irFocus);
   if (S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
   const v = $('scan-vid'); if(v) v.srcObject=null;
@@ -856,19 +799,19 @@ function onScanBarcode(val){
     const seb = extractSeb(raw);
     if (seb){ onSebango(seb); }
     else setScanStatus('⚠️ No se encontró sebango en el código leído','err');
-  }, 150);
+  }, 100); // reducido de 150→100ms para mayor velocidad
 }
 
 // ══════════════════════════════════════════════════════════
 // SEBANGO FOUND — LOOKUP
+// Optimización: fetch con AbortController + timeout de 8s
 // ══════════════════════════════════════════════════════════
 async function onSebango(seb){
   stopScanCam();
-  setScanStatus(`✅ Sebango: <strong>${seb}</strong> — consultando...`,'ok');
-  // Show result section skeleton
-  hide('scan-section');
-  show('result-section');
+  $('scan-section').style.display = 'none';
+  $('result-section').style.display = 'block';
   hideAlerts();
+
   $('res-seb').textContent = seb;
   $('res-ub').textContent  = '...';
   $('res-qpc').textContent = '...';
@@ -876,15 +819,16 @@ async function onSebango(seb){
   $('btn-cap').disabled = true;
   $('bc').innerHTML = `<span>${S.secA}</span><span style="color:var(--border);font-size:16px">›</span><span class="crumb">${S.secB}</span>`;
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+
   try {
     const url = `${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
-    const r = await fetch(url, {redirect:'follow'});
+    const r = await fetch(url, {redirect:'follow', signal: ctrl.signal});
+    clearTimeout(timer);
     const d = await r.json();
     if (d.found){
       S.seb = seb; S.qpc = +d.qpc||0; S.ub = d.ubicacion||seb;
-      // Determine correct conteo based on session history + API
-      const key = `${seb}||${S.secA}||${S.secB}`;
-      // Use API nextConteo as base, but if session already has this key, use session+1
       S.conteo = d.nextConteo || 1;
       $('res-ub').textContent  = S.ub;
       $('res-qpc').textContent = S.qpc;
@@ -898,11 +842,12 @@ async function onSebango(seb){
       setTimeout(rescan, 3000);
     }
   } catch(e){
-    // offline fallback
+    clearTimeout(timer);
+    // Fallback offline o timeout
     S.seb = seb; S.qpc = 0; S.ub = seb; S.conteo = 1;
     $('res-ub').textContent = '(sin conexión)'; $('res-qpc').textContent = '?';
     $('res-conteo').textContent = '1er Conteo';
-    showAlert('warn','Sin conexión — verifica tu red');
+    showAlert('warn', e.name==='AbortError' ? 'Tiempo de espera agotado — verifica tu red' : 'Sin conexión — verifica tu red');
     setupInputs();
     $('btn-cap').disabled = false;
   }
@@ -912,13 +857,12 @@ function setupInputs(){
   $('inp-cajas').value = 0;
   $('inp-parcial').value = 0;
   S.partial = false;
-  const tog = $('tog'); tog.classList.remove('on');
-  hide('partial-inp-row');
-  // Show partial toggle only for SOLDADURA/PRENSAS and QPC < 30
+  $('tog').classList.remove('on');
+  $('partial-inp-row').style.display = 'none';
   if (S.secA !== 'LOGISTICA' && S.qpc > 0 && S.qpc < 30){
-    show('partial-wrap');
+    $('partial-wrap').style.display = 'block';
   } else {
-    hide('partial-wrap');
+    $('partial-wrap').style.display = 'none';
   }
   calcTotal();
 }
@@ -951,13 +895,12 @@ function calcTotal(){
 // CAPTURE
 // ══════════════════════════════════════════════════════════
 async function doCapture(){
-  const seb  = S.seb;
+  const seb   = S.seb;
   const cajas = parseInt($('inp-cajas').value)||0;
   const allowP = S.secA!=='LOGISTICA' && S.qpc<30 && S.partial;
-  const pzas  = allowP ? (parseInt($('inp-parcial').value)||0) : 0;
-  const key   = `${seb}||${S.secA}||${S.secB}`;
+  const pzas   = allowP ? (parseInt($('inp-parcial').value)||0) : 0;
+  const key    = `${seb}||${S.secA}||${S.secB}`;
 
-  // DUPLICATE CHECK — same sebango, same location, same session
   if (S.session[key] !== undefined){
     S.pending = {seb, cajas, pzas, key};
     openGL();
@@ -971,27 +914,32 @@ async function saveCapture(seb, cajas, pzas, key){
   $('btn-cap').textContent = '⏳ Guardando...';
   hideAlerts();
 
-  const conteo = S.conteo;
+  const conteo  = S.conteo;
   const usuario = S.user ? `${S.user.e} - ${S.user.n}` : 'Sin identificar';
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
 
   try {
     const params = new URLSearchParams({
       action:'save', sebango:seb, secA:S.secA, secB:S.secB,
       cajas, parcialPzas:pzas, conteo, usuario
     });
-    const r = await fetch(`${API}?${params}`, {redirect:'follow'});
+    const r = await fetch(`${API}?${params}`, {redirect:'follow', signal: ctrl.signal});
+    clearTimeout(timer);
     const d = await r.json();
     if (d.success || d.ok){
       S.session[key] = conteo;
-      // Advance conteo for next time same sebango is scanned in this session
-      // (so if scanned again it shows as duplicate)
       const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
       showAlert('ok', `✅ ${seb}: ${resumen} — ${conteo===1?'1er':conteo===2?'2do':'3er'} Conteo guardado`);
       addHist(seb, cajas, pzas, conteo);
-      hide('btn-cap'); flex('btn-next'); hide('btn-rescan');
+      $('btn-cap').style.display = 'none';
+      $('btn-next').style.display = 'flex';
+      $('btn-rescan').style.display = 'none';
     } else throw new Error(d.message||'Error al guardar');
   } catch(e){
-    showAlert('err','Error al guardar: '+e.message);
+    clearTimeout(timer);
+    showAlert('err', e.name==='AbortError' ? 'Tiempo de espera agotado al guardar' : 'Error al guardar: '+e.message);
     $('btn-cap').disabled = false;
     $('btn-cap').textContent = '💾 Capturar';
   }
@@ -1010,20 +958,24 @@ function addHist(seb, cajas, pzas, conteo){
 
 function nextCapture(){
   $('btn-next').style.display = 'none';
-  flex('btn-cap'); show('btn-rescan');
-  $('btn-cap').disabled = false; $('btn-cap').textContent = '💾 Capturar';
-  hideAlerts(); hide('unlock-banner');
+  $('btn-cap').style.display = 'flex';
+  $('btn-rescan').style.display = 'block';
+  $('btn-cap').disabled = false;
+  $('btn-cap').textContent = '💾 Capturar';
+  hideAlerts();
+  $('unlock-banner').classList.remove('show');
   rescan();
 }
 
 function rescan(){
   S.scanning = false; S.lastRaw = null;
   stopScanCam();
-  hide('result-section'); show('scan-section');
+  $('result-section').style.display = 'none';
+  $('scan-section').style.display = 'block';
   $('btn-next').style.display = 'none';
-  flex('btn-cap'); show('btn-rescan');
+  $('btn-cap').style.display = 'flex';
+  $('btn-rescan').style.display = 'block';
   hideAlerts();
-  // Auto re-activate
   activateCam();
 }
 
@@ -1032,7 +984,6 @@ function rescan(){
 // ══════════════════════════════════════════════════════════
 function openGL(){
   S.glAuthed = null;
-  // Populate select
   const sel = $('gl-sel');
   sel.innerHTML = '<option value="">— Selecciona GL —</option>';
   GL.filter(g => g.a===S.secA || g.a==='PC').forEach(g=>{
@@ -1051,7 +1002,8 @@ function closeGL(){
   stopGLCam();
   $('gl-modal').classList.remove('show');
   S.pending = null; S.glAuthed = null;
-  $('btn-cap').disabled = false; $('btn-cap').textContent = '💾 Capturar';
+  $('btn-cap').disabled = false;
+  $('btn-cap').textContent = '💾 Capturar';
 }
 
 function setGLMode(m){
@@ -1143,21 +1095,18 @@ function validateGL(emp){
 function authorizeGL(){
   const alertEl=$('gl-alert');
 
-  // QR already validated
   if (S.glAuthed){
     stopGLCam();
     $('gl-modal').classList.remove('show');
     const pc=S.pending; if(!pc) return;
     S.pending=null;
-    // Delete session key so it saves with the correct conteo
     delete S.session[pc.key];
-    showUnlock(`Desbloqueado por ${S.glAuthed.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
+    showUnlock(`🔓 Desbloqueado por ${S.glAuthed.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
     saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key);
     S.glAuthed=null;
     return;
   }
 
-  // Manual validation
   const sel=parseInt($('gl-sel').value);
   const emp=parseInt($('gl-emp-inp').value);
   if(!sel||!emp){
@@ -1173,21 +1122,20 @@ function authorizeGL(){
   const pc=S.pending; if(!pc) return;
   S.pending=null;
   delete S.session[pc.key];
-  showUnlock(`Desbloqueado por ${gl.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
+  showUnlock(`🔓 Desbloqueado por ${gl.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
   saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key);
 }
 
 // ══════════════════════════════════════════════════════════
-// INIT
+// INIT — carga jsQR inmediatamente (no async)
 // ══════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', ()=>{
-  // Pre-warm jsQR by loading it immediately if not already loaded
-  if (typeof jsQR === 'undefined'){
-    const s=document.createElement('script');
-    s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
-    document.head.appendChild(s);
-  }
-});
+(function loadJsQR(){
+  if (typeof jsQR !== 'undefined') return;
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
+  // Sin 'async' para que cargue lo antes posible
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
