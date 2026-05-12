@@ -756,35 +756,62 @@ async function activateCam(){
   }
 }
 
-// ─── OPTIMIZACIÓN: throttle con setTimeout en lugar de rAF continuo ───
+// ─── OPTIMIZACIÓN DE ESCANEO ──────────────────────────────
+// • Canvas reducido a 400px máx (jsQR no necesita más para QR)
+// • OffscreenCanvas cuando el browser lo soporta (más rápido)
+// • 15fps (~66ms) en modo normal; si el video no está listo
+//   espera 80ms en lugar de ciclar rápido innecesariamente
+// ─────────────────────────────────────────────────────────
+const SCAN_SIZE = 400;   // px — tamaño máx del crop a procesar
 let _scanThrottle = null;
+let _offCtx = null;      // OffscreenCanvas context (si disponible)
+
+function getScanCtx(sz){
+  // Intenta reutilizar OffscreenCanvas para evitar reflow
+  if (typeof OffscreenCanvas !== 'undefined'){
+    if (!_offCtx || _offCtx.canvas.width !== sz){
+      const oc = new OffscreenCanvas(sz, sz);
+      _offCtx = oc.getContext('2d', {willReadFrequently: true});
+    }
+    return _offCtx;
+  }
+  // Fallback: canvas DOM oculto
+  const cvs = $('scan-canvas');
+  cvs.width = sz; cvs.height = sz;
+  return cvs.getContext('2d', {willReadFrequently: true});
+}
+
 function scanLoop(){
   if (!S.scanning || !S.stream) return;
-  const vid = $('scan-vid'), cvs = $('scan-canvas');
+  const vid = $('scan-vid');
   if (vid.readyState < 2){
     _scanThrottle = setTimeout(scanLoop, 80);
     return;
   }
-  const sz = Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.55);
-  cvs.width = sz; cvs.height = sz;
-  const ctx = cvs.getContext('2d',{willReadFrequently:true});
-  ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
+  // Crop cuadrado central, máx SCAN_SIZE px
+  const raw = Math.min(vid.videoWidth, vid.videoHeight);
+  const sz  = Math.min(raw, SCAN_SIZE);
+  const ctx = getScanCtx(sz);
+  const sx  = (vid.videoWidth  - raw) / 2;
+  const sy  = (vid.videoHeight - raw) / 2;
+  ctx.drawImage(vid, sx, sy, raw, raw, 0, 0, sz, sz);
   if (typeof jsQR !== 'undefined'){
-    const code = jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz,{inversionAttempts:'dontInvert'});
+    const img  = ctx.getImageData(0, 0, sz, sz);
+    const code = jsQR(img.data, sz, sz, {inversionAttempts:'dontInvert'});
     if (code?.data && code.data !== S.lastRaw){
       S.lastRaw = code.data;
       const seb = extractSeb(code.data);
       if (seb){ S.scanning = false; clearTimeout(_scanThrottle); onSebango(seb); return; }
     }
   }
-  // ~15 fps es suficiente para QR — reduce CPU y mejora velocidad percibida
-  _scanThrottle = setTimeout(scanLoop, 66);
+  _scanThrottle = setTimeout(scanLoop, 66); // ~15 fps
 }
 
 function stopScanCam(){
   S.scanning = false; S.camActive = false;
   clearTimeout(_scanThrottle);
   clearInterval(S._irFocus);
+  _offCtx = null;
   if (S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
   const v = $('scan-vid'); if(v) v.srcObject=null;
 }
@@ -804,7 +831,15 @@ function onScanBarcode(val){
 
 // ══════════════════════════════════════════════════════════
 // SEBANGO FOUND — LOOKUP
-// Optimización: fetch con AbortController + timeout de 8s
+// ──────────────────────────────────────────────────────────
+// LÓGICA DE CONTEO (fuente de verdad):
+//   S.session[key] = número del ÚLTIMO conteo YA GUARDADO
+//   para esta sesión.  El siguiente conteo siempre es:
+//     • Si nunca se guardó en sesión → lo que diga el API
+//       (cuántos conteos hay en el sheet + 1), mínimo 1.
+//     • Si ya se guardó en sesión → session[key] + 1
+//       (esto se usa solo tras autorización GL).
+//   Así el orden 1→2→3 siempre es correcto.
 // ══════════════════════════════════════════════════════════
 async function onSebango(seb){
   stopScanCam();
@@ -829,12 +864,25 @@ async function onSebango(seb){
     const d = await r.json();
     if (d.found){
       S.seb = seb; S.qpc = +d.qpc||0; S.ub = d.ubicacion||seb;
-      S.conteo = d.nextConteo || 1;
+
+      // ── CONTEO: calcular el siguiente correcto ──────────
+      const key = `${seb}||${S.secA}||${S.secB}`;
+      if (S.session[key] !== undefined){
+        // Ya capturamos en esta sesión → el siguiente es session+1
+        S.conteo = S.session[key] + 1;
+      } else {
+        // Primera vez en esta sesión → confiar en el API
+        // nextConteo viene del sheet (cuántos conteos existen + 1)
+        S.conteo = Math.max(1, parseInt(d.nextConteo) || 1);
+      }
+      // Límite máximo 3 conteos
+      if (S.conteo > 3) S.conteo = 3;
+      // ───────────────────────────────────────────────────
+
       $('res-ub').textContent  = S.ub;
       $('res-qpc').textContent = S.qpc;
       $('res-meta').textContent = `${S.secA} › ${S.secB}`;
-      const lbl = S.conteo===1?'1er Conteo':S.conteo===2?'2do Conteo':'3er Conteo';
-      $('res-conteo').textContent = lbl;
+      $('res-conteo').textContent = conteoLabel(S.conteo);
       setupInputs();
       $('btn-cap').disabled = false;
     } else {
@@ -843,15 +891,20 @@ async function onSebango(seb){
     }
   } catch(e){
     clearTimeout(timer);
-    // Fallback offline o timeout
-    S.seb = seb; S.qpc = 0; S.ub = seb; S.conteo = 1;
+    // Fallback offline / timeout
+    S.seb = seb; S.qpc = 0; S.ub = seb;
+    const key = `${seb}||${S.secA}||${S.secB}`;
+    S.conteo = S.session[key] !== undefined ? S.session[key] + 1 : 1;
+    if (S.conteo > 3) S.conteo = 3;
     $('res-ub').textContent = '(sin conexión)'; $('res-qpc').textContent = '?';
-    $('res-conteo').textContent = '1er Conteo';
+    $('res-conteo').textContent = conteoLabel(S.conteo);
     showAlert('warn', e.name==='AbortError' ? 'Tiempo de espera agotado — verifica tu red' : 'Sin conexión — verifica tu red');
     setupInputs();
     $('btn-cap').disabled = false;
   }
 }
+
+function conteoLabel(n){ return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo'; }
 
 function setupInputs(){
   $('inp-cajas').value = 0;
@@ -901,20 +954,21 @@ async function doCapture(){
   const pzas   = allowP ? (parseInt($('inp-parcial').value)||0) : 0;
   const key    = `${seb}||${S.secA}||${S.secB}`;
 
+  // Si YA existe en sesión → pedir autorización GL
+  // Guardamos el conteo ACTUAL (S.conteo) en pending para usarlo al guardar
   if (S.session[key] !== undefined){
-    S.pending = {seb, cajas, pzas, key};
+    S.pending = {seb, cajas, pzas, key, conteo: S.conteo};
     openGL();
     return;
   }
-  await saveCapture(seb, cajas, pzas, key);
+  await saveCapture(seb, cajas, pzas, key, S.conteo);
 }
 
-async function saveCapture(seb, cajas, pzas, key){
+async function saveCapture(seb, cajas, pzas, key, conteo){
   $('btn-cap').disabled = true;
   $('btn-cap').textContent = '⏳ Guardando...';
   hideAlerts();
 
-  const conteo  = S.conteo;
   const usuario = S.user ? `${S.user.e} - ${S.user.n}` : 'Sin identificar';
 
   const ctrl = new AbortController();
@@ -929,9 +983,12 @@ async function saveCapture(seb, cajas, pzas, key){
     clearTimeout(timer);
     const d = await r.json();
     if (d.success || d.ok){
+      // Registrar en sesión el conteo que acabamos de guardar
       S.session[key] = conteo;
+      // Actualizar S.conteo para que la UI refleje el siguiente
+      S.conteo = conteo;
       const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
-      showAlert('ok', `✅ ${seb}: ${resumen} — ${conteo===1?'1er':conteo===2?'2do':'3er'} Conteo guardado`);
+      showAlert('ok', `✅ ${seb}: ${resumen} — ${conteoLabel(conteo)} guardado`);
       addHist(seb, cajas, pzas, conteo);
       $('btn-cap').style.display = 'none';
       $('btn-next').style.display = 'flex';
@@ -1100,9 +1157,8 @@ function authorizeGL(){
     $('gl-modal').classList.remove('show');
     const pc=S.pending; if(!pc) return;
     S.pending=null;
-    delete S.session[pc.key];
-    showUnlock(`🔓 Desbloqueado por ${S.glAuthed.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
-    saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key);
+    showUnlock(`🔓 Desbloqueado por ${S.glAuthed.n} — registrando ${conteoLabel(pc.conteo)} para ${pc.seb}`);
+    saveCapture(pc.seb, pc.cajas, pc.pzas, pc.key, pc.conteo);
     S.glAuthed=null;
     return;
   }
@@ -1121,9 +1177,8 @@ function authorizeGL(){
   $('gl-modal').classList.remove('show');
   const pc=S.pending; if(!pc) return;
   S.pending=null;
-  delete S.session[pc.key];
-  showUnlock(`🔓 Desbloqueado por ${gl.n} — registrando ${S.conteo===1?'1er':S.conteo===2?'2do':'3er'} Conteo para ${pc.seb}`);
-  saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key);
+  showUnlock(`🔓 Desbloqueado por ${gl.n} — registrando ${conteoLabel(pc.conteo)} para ${pc.seb}`);
+  saveCapture(pc.seb, pc.cajas, pc.pzas, pc.key, pc.conteo);
 }
 
 // ══════════════════════════════════════════════════════════
