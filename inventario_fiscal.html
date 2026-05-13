@@ -830,16 +830,78 @@ function onScanBarcode(val){
 }
 
 // ══════════════════════════════════════════════════════════
-// SEBANGO FOUND — LOOKUP
+// CACHÉ LOCAL DE SEBANGS  (IndexedDB-lite via localStorage)
+// Guarda {qpc, ubicacion} para cada sebango ya consultado.
+// Así el segundo escaneo del mismo sebango es INSTANTÁNEO.
+// ══════════════════════════════════════════════════════════
+const CACHE_KEY = 'inv_seb_cache_v1';
+let _sebCache = {};
+try { _sebCache = JSON.parse(localStorage.getItem(CACHE_KEY)||'{}'); } catch(e){}
+function cacheGet(seb){ return _sebCache[seb] || null; }
+function cachePut(seb, data){
+  _sebCache[seb] = data;
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(_sebCache)); } catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════
+// COLA DE GUARDADO  (offline queue)
+// Si no hay conexión, la captura se encola y se reintenta
+// automáticamente cada vez que el usuario presiona Capturar
+// o cuando detectamos que volvió la red.
+// ══════════════════════════════════════════════════════════
+const QUEUE_KEY = 'inv_save_queue_v1';
+let _saveQueue = [];
+try { _saveQueue = JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch(e){}
+
+function queuePersist(){
+  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(_saveQueue)); } catch(e){}
+}
+function queueAdd(item){
+  _saveQueue.push({...item, ts: Date.now()});
+  queuePersist();
+}
+function queueRemove(ts){
+  _saveQueue = _saveQueue.filter(i => i.ts !== ts);
+  queuePersist();
+}
+
+// Reintenta cola en background (sin bloquear UI)
+async function flushQueue(){
+  if (!_saveQueue.length) return;
+  const item = _saveQueue[0]; // procesar uno a la vez
+  try {
+    const params = new URLSearchParams({
+      action:'save', sebango:item.seb, secA:item.secA, secB:item.secB,
+      cajas:item.cajas, parcialPzas:item.pzas, conteo:item.conteo, usuario:item.usuario
+    });
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 12000);
+    const r = await fetch(`${API}?${params}`, {redirect:'follow', signal:ctrl.signal});
+    const d = await r.json();
+    if (d.success || d.ok){
+      queueRemove(item.ts);
+      if (_saveQueue.length) setTimeout(flushQueue, 500);
+      // Notificar si hay cola pendiente resuelta
+      if (!_saveQueue.length) showAlert('ok','✅ Capturas pendientes sincronizadas');
+    }
+  } catch(e){ /* sin conexión, se intentará después */ }
+}
+
+// Escuchar cuando vuelva la conexión
+window.addEventListener('online', () => { if(_saveQueue.length) flushQueue(); });
+
+// ══════════════════════════════════════════════════════════
+// SEBANGO FOUND — LOOKUP  (caché-first)
 // ──────────────────────────────────────────────────────────
-// LÓGICA DE CONTEO (fuente de verdad):
-//   S.session[key] = número del ÚLTIMO conteo YA GUARDADO
-//   para esta sesión.  El siguiente conteo siempre es:
-//     • Si nunca se guardó en sesión → lo que diga el API
-//       (cuántos conteos hay en el sheet + 1), mínimo 1.
-//     • Si ya se guardó en sesión → session[key] + 1
-//       (esto se usa solo tras autorización GL).
-//   Así el orden 1→2→3 siempre es correcto.
+// Flujo:
+//  1. Revisar caché local → respuesta INMEDIATA si existe
+//  2. En paralelo hacer fetch al API (no bloquea la UI)
+//  3. Si el API responde, actualizar caché silenciosamente
+//
+// LÓGICA DE CONTEO:
+//  S.session[key] = último conteo YA GUARDADO en esta sesión
+//  Siguiente conteo = session[key]+1  (si ya existe en sesión)
+//                   = nextConteo del API (si es primera vez)
 // ══════════════════════════════════════════════════════════
 async function onSebango(seb){
   stopScanCam();
@@ -848,60 +910,101 @@ async function onSebango(seb){
   hideAlerts();
 
   $('res-seb').textContent = seb;
+  $('bc').innerHTML = `<span>${S.secA}</span><span style="color:var(--border);font-size:16px">›</span><span class="crumb">${S.secB}</span>`;
+
+  const key = `${seb}||${S.secA}||${S.secB}`;
+
+  // ── 1. CACHÉ: respuesta inmediata si ya lo conocemos ──
+  const cached = cacheGet(seb);
+  if (cached){
+    applyLookup(seb, key, cached, /*fromCache*/true);
+    // Refresca el nextConteo en background sin bloquear
+    fetchLookupBackground(seb, key);
+    return;
+  }
+
+  // ── 2. SIN CACHÉ: mostrar spinner y esperar ──
   $('res-ub').textContent  = '...';
   $('res-qpc').textContent = '...';
   $('res-conteo').textContent = '...';
   $('btn-cap').disabled = true;
-  $('bc').innerHTML = `<span>${S.secA}</span><span style="color:var(--border);font-size:16px">›</span><span class="crumb">${S.secB}</span>`;
 
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 8000);
-
+  const timer = setTimeout(() => ctrl.abort(), 9000);
   try {
     const url = `${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
     const r = await fetch(url, {redirect:'follow', signal: ctrl.signal});
     clearTimeout(timer);
     const d = await r.json();
     if (d.found){
-      S.seb = seb; S.qpc = +d.qpc||0; S.ub = d.ubicacion||seb;
-
-      // ── CONTEO: calcular el siguiente correcto ──────────
-      const key = `${seb}||${S.secA}||${S.secB}`;
-      if (S.session[key] !== undefined){
-        // Ya capturamos en esta sesión → el siguiente es session+1
-        S.conteo = S.session[key] + 1;
-      } else {
-        // Primera vez en esta sesión → confiar en el API
-        // nextConteo viene del sheet (cuántos conteos existen + 1)
-        S.conteo = Math.max(1, parseInt(d.nextConteo) || 1);
-      }
-      // Límite máximo 3 conteos
-      if (S.conteo > 3) S.conteo = 3;
-      // ───────────────────────────────────────────────────
-
-      $('res-ub').textContent  = S.ub;
-      $('res-qpc').textContent = S.qpc;
-      $('res-meta').textContent = `${S.secA} › ${S.secB}`;
-      $('res-conteo').textContent = conteoLabel(S.conteo);
-      setupInputs();
-      $('btn-cap').disabled = false;
+      cachePut(seb, d);           // guardar en caché para próxima vez
+      applyLookup(seb, key, d, false);
     } else {
       showAlert('err', `Sebango ${seb} no encontrado en la base de datos`);
       setTimeout(rescan, 3000);
     }
   } catch(e){
     clearTimeout(timer);
-    // Fallback offline / timeout
+    // Sin conexión y sin caché → permitir captura con datos mínimos
     S.seb = seb; S.qpc = 0; S.ub = seb;
-    const key = `${seb}||${S.secA}||${S.secB}`;
-    S.conteo = S.session[key] !== undefined ? S.session[key] + 1 : 1;
-    if (S.conteo > 3) S.conteo = 3;
-    $('res-ub').textContent = '(sin conexión)'; $('res-qpc').textContent = '?';
+    S.conteo = S.session[key] !== undefined ? Math.min(S.session[key]+1, 3) : 1;
+    $('res-ub').textContent = '— sin conexión';
+    $('res-qpc').textContent = '?';
     $('res-conteo').textContent = conteoLabel(S.conteo);
-    showAlert('warn', e.name==='AbortError' ? 'Tiempo de espera agotado — verifica tu red' : 'Sin conexión — verifica tu red');
+    $('res-meta').textContent = `${S.secA} › ${S.secB}`;
+    showAlert('warn', e.name==='AbortError'
+      ? '⚠️ Sin respuesta del servidor — captura encolada sin conexión'
+      : '⚠️ Sin conexión — la captura se guardará cuando haya red');
     setupInputs();
     $('btn-cap').disabled = false;
   }
+}
+
+// Aplica los datos del lookup (caché o API) a la UI
+function applyLookup(seb, key, d, fromCache){
+  S.seb = seb;
+  S.qpc = +d.qpc || 0;
+  S.ub  = d.ubicacion || seb;
+
+  // Calcular conteo correcto
+  if (S.session[key] !== undefined){
+    S.conteo = Math.min(S.session[key] + 1, 3);
+  } else {
+    S.conteo = Math.min(Math.max(1, parseInt(d.nextConteo)||1), 3);
+  }
+
+  $('res-ub').textContent      = S.ub;
+  $('res-qpc').textContent     = S.qpc;
+  $('res-meta').textContent    = `${S.secA} › ${S.secB}`;
+  $('res-conteo').textContent  = conteoLabel(S.conteo);
+  if (fromCache){
+    // Indicador sutil de que viene de caché
+    $('res-meta').textContent = `${S.secA} › ${S.secB}  ⚡`;
+  }
+  setupInputs();
+  $('btn-cap').disabled = false;
+}
+
+// Refresca nextConteo en background (no bloquea UI)
+async function fetchLookupBackground(seb, key){
+  try {
+    const ctrl = new AbortController();
+    setTimeout(()=>ctrl.abort(), 8000);
+    const url = `${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
+    const r = await fetch(url, {redirect:'follow', signal:ctrl.signal});
+    const d = await r.json();
+    if (d.found){
+      cachePut(seb, d);
+      // Si el usuario aún no capturó, actualizar conteo silenciosamente
+      if ($('btn-cap').disabled === false && S.seb === seb){
+        if (S.session[key] === undefined){
+          S.conteo = Math.min(Math.max(1, parseInt(d.nextConteo)||1), 3);
+          $('res-conteo').textContent = conteoLabel(S.conteo);
+          $('res-meta').textContent = `${S.secA} › ${S.secB}`;
+        }
+      }
+    }
+  } catch(e){ /* silencioso */ }
 }
 
 function conteoLabel(n){ return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo'; }
@@ -971,8 +1074,9 @@ async function saveCapture(seb, cajas, pzas, key, conteo){
 
   const usuario = S.user ? `${S.user.e} - ${S.user.n}` : 'Sin identificar';
 
+  // Intentar enviar con timeout corto (7s) — si falla, encolar
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
+  const timer = setTimeout(() => ctrl.abort(), 7000);
 
   try {
     const params = new URLSearchParams({
@@ -983,34 +1087,66 @@ async function saveCapture(seb, cajas, pzas, key, conteo){
     clearTimeout(timer);
     const d = await r.json();
     if (d.success || d.ok){
-      // Registrar en sesión el conteo que acabamos de guardar
       S.session[key] = conteo;
-      // Actualizar S.conteo para que la UI refleje el siguiente
       S.conteo = conteo;
       const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
       showAlert('ok', `✅ ${seb}: ${resumen} — ${conteoLabel(conteo)} guardado`);
       addHist(seb, cajas, pzas, conteo);
-      $('btn-cap').style.display = 'none';
-      $('btn-next').style.display = 'flex';
-      $('btn-rescan').style.display = 'none';
+      afterSaveOK();
     } else throw new Error(d.message||'Error al guardar');
   } catch(e){
     clearTimeout(timer);
-    showAlert('err', e.name==='AbortError' ? 'Tiempo de espera agotado al guardar' : 'Error al guardar: '+e.message);
-    $('btn-cap').disabled = false;
-    $('btn-cap').textContent = '💾 Capturar';
+    // ── GUARDAR EN COLA OFFLINE ──────────────────────────
+    // El registro se enviará cuando haya conexión.
+    // Para el usuario se ve como guardado (UX optimista).
+    S.session[key] = conteo;
+    S.conteo = conteo;
+    queueAdd({seb, cajas, pzas, conteo, usuario,
+               secA:S.secA, secB:S.secB});
+    const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
+    showAlert('warn',
+      `📥 ${seb}: ${resumen} — ${conteoLabel(conteo)} guardado localmente (sin conexión)`);
+    addHist(seb, cajas, pzas, conteo, /*pending*/true);
+    afterSaveOK();
+    // Intentar vaciar cola en background
+    setTimeout(flushQueue, 2000);
   }
 }
 
-function addHist(seb, cajas, pzas, conteo){
+function afterSaveOK(){
+  $('btn-cap').style.display = 'none';
+  $('btn-next').style.display = 'flex';
+  $('btn-rescan').style.display = 'none';
+}
+
+function addHist(seb, cajas, pzas, conteo, pending=false){
   const wrap = $('hist-wrap'), hist = $('hist');
   wrap.style.display = 'block';
   const d = document.createElement('div');
   d.className = 'hist-item';
   const det = pzas>0?`${cajas} cajas + ${pzas} pzas`:`${cajas} cajas`;
-  d.innerHTML = `<span><strong>${seb}</strong> <small>#${conteo}</small></span><span>${det}</span>`;
+  const icon = pending ? '📥 ' : '';
+  d.innerHTML = `<span>${icon}<strong>${seb}</strong> <small>#${conteo}</small></span><span>${det}</span>`;
   hist.insertBefore(d, hist.firstChild);
   if (hist.children.length > 6) hist.removeChild(hist.lastChild);
+  updateQueueBadge();
+}
+
+// Muestra cuántas capturas están pendientes de sincronizar
+function updateQueueBadge(){
+  let badge = $('queue-badge');
+  if (!badge){
+    badge = document.createElement('div');
+    badge.id = 'queue-badge';
+    badge.style.cssText = 'background:#e37400;color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;display:none;margin-right:4px';
+    $('hdr').insertBefore(badge, $('back-btn'));
+  }
+  if (_saveQueue.length > 0){
+    badge.textContent = `📥 ${_saveQueue.length} pend.`;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function nextCapture(){
@@ -1182,14 +1318,20 @@ function authorizeGL(){
 }
 
 // ══════════════════════════════════════════════════════════
-// INIT — carga jsQR inmediatamente (no async)
+// INIT
 // ══════════════════════════════════════════════════════════
-(function loadJsQR(){
-  if (typeof jsQR !== 'undefined') return;
-  const s = document.createElement('script');
-  s.src = 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
-  // Sin 'async' para que cargue lo antes posible
-  document.head.appendChild(s);
+(function init(){
+  // Cargar jsQR sin async para que esté listo inmediatamente
+  if (typeof jsQR === 'undefined'){
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
+    document.head.appendChild(s);
+  }
+  // Si hay capturas pendientes de sesiones anteriores, intentar enviarlas
+  if (_saveQueue.length){
+    updateQueueBadge();
+    setTimeout(flushQueue, 3000); // esperar 3s para que cargue el browser
+  }
 })();
 </script>
 </body>
