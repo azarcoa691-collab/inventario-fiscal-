@@ -6,138 +6,167 @@
 <title>Inventario Fiscal</title>
 <style>
 :root{
-  --blue:#1a73e8;--blue-d:#1557b0;--green:#1e8e3e;--green-l:#e6f4ea;
-  --red:#c5221f;--red-l:#fce8e6;--orange:#e37400;--orange-l:#fef3e2;
-  --bg:#f8f9fa;--border:#dadce0;--txt:#5f6368;--dark:#202124;--white:#fff;
-  --r:12px;--sh:0 2px 8px rgba(0,0,0,.12);
-  --hh:60px;
+  --blue:#1a73e8;--blue-d:#1557b0;--blue-l:#e8f0fe;
+  --green:#1e8e3e;--green-d:#145a2b;--green-l:#e6f4ea;
+  --red:#c5221f;--red-l:#fce8e6;
+  --orange:#e37400;--orange-l:#fef3e2;
+  --bg:#f0f2f5;--border:#dadce0;--txt:#5f6368;--dark:#202124;--white:#fff;
+  --r:14px;--sh:0 3px 10px rgba(0,0,0,.13);
+  --hh:clamp(54px,7vw,68px);
+  --fs-xs:clamp(10px,1.4vw,13px);
+  --fs-s:clamp(12px,1.7vw,15px);
+  --fs-m:clamp(14px,2vw,17px);
+  --fs-l:clamp(16px,2.4vw,20px);
+  --fs-xl:clamp(20px,3vw,26px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--dark)}
 
-/* ── HEADER ── */
+/* HEADER */
 .hdr{
   position:fixed;top:0;left:0;right:0;height:var(--hh);
-  background:var(--blue);color:#fff;
-  display:flex;align-items:center;gap:10px;padding:0 14px;
-  z-index:200;box-shadow:0 2px 6px rgba(0,0,0,.2);
+  background:linear-gradient(135deg,#1a73e8,#1254c0);
+  color:#fff;display:flex;align-items:center;gap:10px;
+  padding:0 clamp(10px,2vw,18px);z-index:200;
+  box-shadow:0 3px 12px rgba(0,0,0,.28);
 }
-.hdr-icon{font-size:22px;flex-shrink:0}
+.hdr-icon{font-size:clamp(20px,3vw,26px);flex-shrink:0}
 .hdr-info{flex:1;min-width:0}
-.hdr-title{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hdr-sub{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title{font-size:var(--fs-m);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-sub{font-size:var(--fs-xs);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hdr-badge{
-  background:rgba(255,255,255,.2);border-radius:8px;padding:4px 8px;
-  font-size:10px;font-weight:700;text-align:right;line-height:1.4;flex-shrink:0;max-width:110px;
+  background:rgba(255,255,255,.2);border-radius:8px;
+  padding:clamp(3px,.6vw,6px) clamp(6px,1vw,10px);
+  font-size:var(--fs-xs);font-weight:700;text-align:right;line-height:1.4;
+  flex-shrink:0;max-width:clamp(100px,20vw,180px);
 }
 .hdr-badge div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .back-btn{
   background:rgba(255,255,255,.2);border:none;color:#fff;
-  border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;flex-shrink:0;
+  border-radius:8px;padding:clamp(5px,1vw,8px) clamp(8px,1.2vw,12px);
+  font-size:clamp(16px,2.5vw,22px);cursor:pointer;flex-shrink:0;
 }
 
-/* ══════════════════════════════════════════
-   UNIFIED SCREEN SYSTEM
-   Todas las pantallas usan el mismo sistema:
-   - position:fixed, inset = debajo del header
-   - display:none por defecto
-   - display:flex cuando tienen clase .active
-   ══════════════════════════════════════════ */
-.screens{position:fixed;top:var(--hh);left:0;right:0;bottom:0;}
+/* SCREENS */
+.screens{position:fixed;top:var(--hh);left:0;right:0;bottom:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.active{display:flex}
+.screen.btn-screen{overflow:hidden}
+#screen-login{align-items:center;justify-content:center;padding:clamp(16px,3vw,28px);gap:14px;text-align:center;background:var(--bg)}
+#screen-scan{padding:clamp(10px,2vw,18px);background:var(--bg)}
+#screen-a,#screen-b{padding:clamp(10px,2vw,16px);gap:clamp(8px,1.5vw,14px);background:var(--bg)}
 
-.screen{
-  position:absolute;inset:0;
-  display:none;          /* SIEMPRE oculto por defecto */
-  flex-direction:column;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
+/* LOGIN */
+.login-card{
+  background:var(--white);border:2px solid var(--blue);border-radius:20px;
+  padding:clamp(18px,3vw,32px) clamp(16px,2.5vw,28px);
+  width:100%;max-width:clamp(300px,55vw,440px);
+  box-shadow:0 6px 28px rgba(26,115,232,.18);
 }
-/* La pantalla activa se muestra */
-.screen.active{ display:flex; }
+.login-ico{font-size:clamp(44px,8vw,68px);margin-bottom:8px}
+.login-title{font-size:var(--fs-xl);font-weight:800;margin-bottom:4px}
+.login-sub{font-size:var(--fs-s);color:var(--txt);margin-bottom:16px;line-height:1.5}
+.divider{font-size:var(--fs-xs);color:var(--txt);margin:10px 0;text-align:center}
+.emp-inp-wrap{display:flex;gap:8px;margin-bottom:4px}
+.emp-inp{
+  flex:1;padding:clamp(10px,1.5vw,14px) 12px;
+  border:2px solid var(--border);border-radius:10px;
+  font-size:var(--fs-m);font-weight:700;color:var(--dark);
+  background:var(--white);outline:none;
+}
+.emp-inp:focus{border-color:var(--blue)}
+.emp-go{
+  padding:0 clamp(14px,2vw,22px);border:none;border-radius:10px;
+  background:var(--blue);color:#fff;font-size:var(--fs-m);font-weight:700;cursor:pointer;
+}
+.emp-go:active{opacity:.85}
 
-/* Pantallas de botones (A, B) — flex sin scroll */
-.screen.btn-screen{overflow:hidden;}
-
-/* Pantalla de login — centrada */
-#screen-login{align-items:center;justify-content:center;padding:20px;gap:14px;text-align:center;background:var(--bg);}
-
-/* Pantalla de scan — scroll con padding */
-#screen-scan{padding:14px;background:var(--bg);}
-
-/* Pantallas A y B — padding + flex column */
-#screen-a,#screen-b{padding:12px;gap:10px;background:var(--bg);}
-
-/* ── GRIDS DE BOTONES ── */
-.sec-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;flex-shrink:0}
-.sec-title{font-size:18px;font-weight:800;flex-shrink:0}
-.btn-grid{display:grid;gap:10px;flex:1;min-height:0}
-#secb-grid{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;display:grid;gap:10px;}
+/* SECTION A — 3D BUTTONS */
+.sec-label{font-size:var(--fs-xs);font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;flex-shrink:0}
+.sec-title{font-size:var(--fs-xl);font-weight:800;flex-shrink:0}
+.btn-grid{display:grid;gap:clamp(8px,1.5vw,16px);flex:1;min-height:0}
 .area-btn{
-  background:var(--white);border:2px solid var(--border);border-radius:14px;
-  font-size:15px;font-weight:700;color:var(--dark);cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;transition:background .1s,border-color .1s;width:100%;
+  background:linear-gradient(180deg,#fff 0%,#e4eaf4 100%);
+  border:none;border-radius:clamp(14px,2.2vw,20px);
+  box-shadow:0 7px 0 #a8b5c8,0 9px 20px rgba(0,0,0,.2);
+  font-size:clamp(16px,2.8vw,24px);font-weight:800;color:var(--dark);
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:10px;width:100%;
+  transition:transform .08s,box-shadow .08s;
 }
-.area-btn .ico{font-size:34px}
-.area-btn:active{background:#e8f0fe;border-color:var(--blue);color:var(--blue)}
-.area-btn.small{font-size:13px;font-weight:700;border-radius:10px;gap:0}
+.area-btn .ico{font-size:clamp(30px,5.5vw,48px)}
+.area-btn:active{transform:translateY(5px);box-shadow:0 2px 0 #a8b5c8,0 4px 8px rgba(0,0,0,.15)}
 
-/* ── LOGIN CARD ── */
-.login-card{background:var(--white);border:2px dashed var(--blue);border-radius:20px;padding:24px 20px;width:100%;max-width:320px}
-.login-ico{font-size:52px;margin-bottom:10px}
-.login-title{font-size:18px;font-weight:800;margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--txt);margin-bottom:16px}
+/* SECTION B — 3D BUTTONS */
+#secb-grid{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;display:grid;gap:clamp(6px,1.2vw,12px)}
+.secb-btn{
+  background:linear-gradient(180deg,#2979ff 0%,#1254c0 100%);
+  border:none;border-radius:clamp(10px,1.8vw,16px);
+  box-shadow:0 5px 0 #083494,0 7px 16px rgba(0,0,0,.25);
+  font-size:clamp(13px,1.9vw,18px);font-weight:800;color:#fff;
+  cursor:pointer;padding:clamp(12px,2vw,18px) 6px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .08s,box-shadow .08s;letter-spacing:.5px;
+}
+.secb-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #083494,0 3px 6px rgba(0,0,0,.18)}
 
-/* ── CAMERA ── */
+/* CAMERA */
 .cam-selector{display:flex;gap:8px;margin-bottom:10px}
-.cam-opt{flex:1;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-size:12px;font-weight:700;cursor:pointer;color:var(--txt)}
-.cam-opt.on{background:#e8f0fe;border-color:var(--blue);color:var(--blue)}
+.cam-opt{flex:1;padding:clamp(8px,1.2vw,11px) 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-size:var(--fs-s);font-weight:700;cursor:pointer;color:var(--txt)}
+.cam-opt.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d)}
 .scan-wrap{position:relative;border-radius:var(--r);overflow:hidden;background:#000;margin-bottom:10px}
-.scan-wrap video{width:100%;display:block;max-height:240px;object-fit:cover}
+.scan-wrap video{width:100%;display:block;max-height:clamp(200px,35vw,280px);object-fit:cover}
 .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.scan-frame{width:180px;height:180px;position:relative}
+.scan-frame{width:clamp(150px,28vw,200px);height:clamp(150px,28vw,200px);position:relative}
 .sf-c{position:absolute;width:26px;height:26px;border-color:#00e5ff;border-style:solid}
 .sf-tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
 .sf-tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
 .sf-br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
 .sf-bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
-.sf-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);animation:scan 1.8s linear infinite;top:0}
-@keyframes scan{0%{top:4px}100%{top:172px}}
-.scan-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px;white-space:nowrap}
-.scan-status{font-size:13px;color:var(--txt);text-align:center;padding:6px 0;min-height:28px}
+.sf-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);animation:scanline 1.8s linear infinite;top:0}
+@keyframes scanline{0%{top:4px}100%{top:calc(100% - 4px)}}
+.scan-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:var(--fs-xs);padding:4px 10px;border-radius:20px;white-space:nowrap}
+.scan-status{font-size:var(--fs-s);color:var(--txt);text-align:center;padding:6px 0;min-height:28px}
 .scan-status.ok{color:var(--green);font-weight:700}
 .scan-status.err{color:var(--red);font-weight:700}
 .pulse-wrap{display:flex;align-items:center;justify-content:center;gap:8px}
 .dot{width:9px;height:9px;background:var(--blue);border-radius:50%;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
 
-/* ── IR MODE ── */
-.ir-panel{background:var(--white);border:2px dashed #ffb74d;border-radius:var(--r);padding:24px;text-align:center;margin-bottom:10px}
-.ir-panel .ir-ico{font-size:48px;margin-bottom:8px}
-.ir-panel .ir-t{font-size:15px;font-weight:700;margin-bottom:4px}
-.ir-panel .ir-s{font-size:12px;color:var(--txt)}
+/* IR MODE */
+.ir-panel{background:var(--white);border:2px dashed #ffb74d;border-radius:var(--r);padding:clamp(16px,3vw,28px);text-align:center;margin-bottom:10px}
+.ir-panel .ir-ico{font-size:clamp(36px,6vw,54px);margin-bottom:8px}
+.ir-panel .ir-t{font-size:var(--fs-m);font-weight:700;margin-bottom:4px}
+.ir-panel .ir-s{font-size:var(--fs-s);color:var(--txt)}
 
-/* ── RESULT CARD ── */
-.card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
-.card .lbl{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--txt);text-transform:uppercase;margin-bottom:2px}
-.card .val{font-size:22px;font-weight:800;margin-bottom:8px}
+/* RESULT CARD */
+.card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:clamp(12px,2vw,18px);margin-bottom:12px;box-shadow:var(--sh)}
+.card .lbl{font-size:var(--fs-xs);font-weight:700;letter-spacing:.8px;color:var(--txt);text-transform:uppercase;margin-bottom:2px}
+.card .val{font-size:var(--fs-xl);font-weight:800;margin-bottom:8px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.chip{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
-.chip.blue{background:#e8f0fe;border-color:#b3c8f8;color:var(--blue-d)}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:var(--fs-s);font-weight:700}
+.chip.blue{background:var(--blue-l);border-color:#b3c8f8;color:var(--blue-d)}
 .chip.orange{background:var(--orange-l);border-color:#f8d999;color:#7a3f00}
-.card-meta{font-size:11px;color:var(--txt)}
-.conteo-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#e8f0fe;color:var(--blue-d);margin-top:4px}
+.chip.red{background:var(--red-l);border-color:#f5b7b5;color:#8a1a17}
+.card-meta{font-size:var(--fs-xs);color:var(--txt)}
+.conteo-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:var(--fs-s);font-weight:700;background:var(--blue-l);color:var(--blue-d);margin-top:4px}
 
-/* ── INPUTS ── */
-.inp-section{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
-.inp-section h3{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+/* DUPLICATE WARNING */
+.dup-card{background:var(--red-l);border:2px solid #f5b7b5;border-radius:var(--r);padding:clamp(10px,1.8vw,14px);margin-bottom:12px;display:none}
+.dup-card.show{display:block}
+.dup-card h4{color:var(--red);font-size:var(--fs-m);font-weight:700;margin-bottom:4px}
+.dup-card p{font-size:var(--fs-s);color:#8a1a17}
+
+/* INPUTS */
+.inp-section{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:clamp(12px,2vw,18px);margin-bottom:12px;box-shadow:var(--sh)}
+.inp-section h3{font-size:var(--fs-m);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .inp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.inp-row label{font-size:13px;font-weight:600;color:var(--txt);width:54px;flex-shrink:0}
+.inp-row label{font-size:var(--fs-s);font-weight:600;color:var(--txt);width:54px;flex-shrink:0}
 .num-wrap{flex:1;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--white)}
-.num-btn{width:44px;height:48px;background:var(--bg);border:none;font-size:22px;font-weight:700;cursor:pointer;color:var(--dark);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.num-btn{width:clamp(44px,7vw,58px);height:clamp(48px,7vw,60px);background:var(--bg);border:none;font-size:clamp(20px,3vw,28px);font-weight:700;cursor:pointer;color:var(--dark);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .num-btn:active{background:var(--border)}
-.num-inp{flex:1;height:48px;border:none;outline:none;text-align:center;font-size:24px;font-weight:800;color:var(--dark);background:transparent;min-width:0}
+.num-inp{flex:1;height:clamp(48px,7vw,60px);border:none;outline:none;text-align:center;font-size:clamp(22px,3.5vw,30px);font-weight:800;color:var(--dark);background:transparent;min-width:0}
 .num-inp::-webkit-outer-spin-button,.num-inp::-webkit-inner-spin-button{-webkit-appearance:none}
 .num-inp[type=number]{-moz-appearance:textfield}
 .toggle-row{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer}
@@ -145,54 +174,55 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 .toggle.on{background:var(--blue)}
 .toggle-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .toggle.on .toggle-knob{left:22px}
-.total-box{background:#e8f0fe;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.total-box .tl{font-size:13px;font-weight:600;color:var(--blue-d)}
-.total-box .tv{font-size:26px;font-weight:800;color:var(--blue)}
+.total-box{background:var(--blue-l);border-radius:10px;padding:clamp(8px,1.5vw,12px) 14px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.total-box .tl{font-size:var(--fs-s);font-weight:600;color:var(--blue-d)}
+.total-box .tv{font-size:clamp(24px,4vw,32px);font-weight:800;color:var(--blue)}
 
-/* ── BUTTONS ── */
-.btn{width:100%;border:none;border-radius:var(--r);padding:15px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;transition:opacity .15s,transform .1s}
-.btn:active{opacity:.85;transform:scale(.98)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-blue{background:var(--blue);color:#fff}
-.btn-green{background:var(--green);color:#fff}
-.btn-outline{background:var(--white);border:1.5px solid var(--border);color:var(--txt)}
+/* BUTTONS */
+.btn{width:100%;border:none;border-radius:var(--r);padding:clamp(13px,2vw,18px);font-size:var(--fs-m);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;transition:transform .1s,box-shadow .1s}
+.btn:active{opacity:.85;transform:translateY(3px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-blue{background:linear-gradient(180deg,#1a73e8,#1254c0);color:#fff;box-shadow:0 5px 0 #0a3d8a,0 7px 14px rgba(0,0,0,.22)}
+.btn-blue:active{box-shadow:0 1px 0 #0a3d8a}
+.btn-green{background:linear-gradient(180deg,#1e8e3e,#145a2b);color:#fff;box-shadow:0 5px 0 #0a3a1c,0 7px 14px rgba(0,0,0,.22)}
+.btn-green:active{box-shadow:0 1px 0 #0a3a1c}
+.btn-outline{background:var(--white);border:1.5px solid var(--border);color:var(--txt);box-shadow:var(--sh)}
 
-/* ── ALERTS ── */
-.alert{border-radius:var(--r);padding:12px 14px;margin-bottom:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:10px;animation:slideIn .25s ease}
+/* ALERTS */
+.alert{border-radius:var(--r);padding:clamp(10px,1.5vw,14px) 14px;margin-bottom:10px;font-size:var(--fs-s);font-weight:600;display:none;align-items:center;gap:10px;animation:slideIn .25s ease}
 .alert.show{display:flex}
 .alert.ok{background:var(--green-l);color:#0a5224;border:1.5px solid #a8d5b5}
 .alert.err{background:var(--red-l);color:#8a1a17;border:1.5px solid #f5b7b5}
 .alert.warn{background:var(--orange-l);color:#7a4a00;border:1.5px solid #f8d18a}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.alert-ico{font-size:20px;flex-shrink:0}
-.unlock-banner{background:var(--orange-l);border:1.5px solid #f8d18a;border-radius:var(--r);padding:10px 14px;display:none;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#7a4a00;margin-bottom:10px}
+.alert-ico{font-size:clamp(18px,2.5vw,22px);flex-shrink:0}
+.unlock-banner{background:var(--orange-l);border:1.5px solid #f8d18a;border-radius:var(--r);padding:10px 14px;display:none;align-items:center;gap:8px;font-size:var(--fs-s);font-weight:600;color:#7a4a00;margin-bottom:10px}
 .unlock-banner.show{display:flex}
 
-/* ── BREADCRUMB ── */
-.bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt);margin-bottom:10px;background:var(--white);border-radius:8px;padding:7px 12px;border:1px solid var(--border)}
+/* BREADCRUMB */
+.bc{display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--txt);margin-bottom:10px;background:var(--white);border-radius:8px;padding:7px 12px;border:1px solid var(--border)}
 .bc .crumb{font-weight:700;color:var(--blue)}
 
-/* ── HISTORY ── */
-.hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+/* HISTORY */
+.hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:var(--fs-s)}
 .hist-item:last-child{border:none}
 
-/* ── GL MODAL ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+/* GL MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.show{display:flex}
-.modal{background:var(--white);border-radius:16px;padding:20px;width:100%;max-width:360px;animation:mIn .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.modal{background:var(--white);border-radius:16px;padding:clamp(16px,2.5vw,24px);width:100%;max-width:clamp(300px,55vw,420px);animation:mIn .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
 @keyframes mIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
-.modal h2{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--red)}
-.modal p{font-size:13px;color:var(--txt);margin-bottom:14px;line-height:1.5}
-.modal select,.modal input[type=number]{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:15px;margin-bottom:10px;background:var(--white);color:var(--dark);outline:none}
+.modal h2{font-size:var(--fs-l);font-weight:700;margin-bottom:6px;color:var(--red)}
+.modal p{font-size:var(--fs-s);color:var(--txt);margin-bottom:14px;line-height:1.5}
+.modal select,.modal input[type=number]{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:clamp(10px,1.5vw,13px) 12px;font-size:var(--fs-m);margin-bottom:10px;background:var(--white);color:var(--dark);outline:none}
 .modal select:focus,.modal input:focus{border-color:var(--blue)}
 .modal-btns{display:flex;gap:10px;margin-top:4px}
-.btn-cancel{flex:1;padding:12px;border:1.5px solid var(--border);background:var(--white);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;color:var(--txt)}
-.btn-ok{flex:1;padding:12px;border:none;background:var(--blue);border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;color:#fff}
+.btn-cancel{flex:1;padding:clamp(11px,1.8vw,14px);border:1.5px solid var(--border);background:var(--white);border-radius:10px;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:var(--txt)}
+.btn-ok{flex:1;padding:clamp(11px,1.8vw,14px);border:none;background:var(--blue);border-radius:10px;font-size:var(--fs-m);font-weight:700;cursor:pointer;color:#fff}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="hdr" id="hdr">
   <span class="hdr-icon">📦</span>
   <div class="hdr-info">
@@ -206,17 +236,26 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
   <button class="back-btn" id="back-btn" style="display:none" onclick="goBack()">←</button>
 </div>
 
-<!-- SCREENS — todos usan la misma clase .screen -->
 <div class="screens">
 
-  <!-- ══ LOGIN ══ -->
+  <!-- LOGIN -->
   <div class="screen active" id="screen-login">
     <div class="login-card">
       <div class="login-ico">🪪</div>
       <div class="login-title">Identificación</div>
-      <div class="login-sub">Escanea el QR de tu credencial para continuar</div>
+      <div class="login-sub">Ingresa tu número de empleado o escanea tu credencial</div>
 
-      <div class="cam-selector" id="login-cam-sel">
+      <div class="emp-inp-wrap">
+        <input class="emp-inp" id="emp-manual-inp" type="text" inputmode="numeric"
+          maxlength="5" placeholder="1XXXX — Número de empleado"
+          autocomplete="off" oninput="onManualEmpInput(this.value)">
+        <button class="emp-go" id="emp-go-btn" onclick="submitManualEmp()">→</button>
+      </div>
+      <div id="login-status" style="font-size:var(--fs-s);min-height:18px;margin-bottom:10px;text-align:left"></div>
+
+      <div class="divider">— o escanea tu credencial —</div>
+
+      <div class="cam-selector">
         <button class="cam-opt on" id="lc-env" onclick="setLoginCam('env')">📷 Cámara</button>
         <button class="cam-opt" id="lc-ir" onclick="setLoginCam('ir')">🔴 Lector</button>
       </div>
@@ -238,9 +277,9 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 
       <div id="login-ir-wrap" style="display:none">
         <div class="ir-panel" style="padding:16px">
-          <div style="font-size:32px">🔴</div>
-          <div style="font-size:13px;font-weight:700;margin-top:6px">Lector activo</div>
-          <div style="font-size:12px;color:var(--txt)">Presiona el gatillo apuntando a tu credencial</div>
+          <div class="ir-ico">🔴</div>
+          <div class="ir-t">Lector activo</div>
+          <div class="ir-s">Presiona el gatillo apuntando a tu credencial</div>
         </div>
         <input id="login-ir-inp" type="text" style="position:absolute;opacity:0;width:1px;height:1px"
           autocomplete="off" oninput="onLoginBarcode(this.value)">
@@ -250,13 +289,12 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         📷 Activar cámara
       </button>
     </div>
-    <div id="login-status" style="font-size:13px;min-height:20px;margin-top:4px"></div>
   </div>
 
-  <!-- ══ SECTION A ══ -->
+  <!-- SECTION A -->
   <div class="screen btn-screen" id="screen-a">
     <div class="sec-label">Paso 1 de 3</div>
-    <div class="sec-title">Sección A — Área</div>
+    <div class="sec-title">Selecciona el Área</div>
     <div class="btn-grid" style="grid-template-columns:1fr">
       <button class="area-btn" onclick="selectA('PRENSAS')"><span class="ico">🔩</span>PRENSAS</button>
       <button class="area-btn" onclick="selectA('SOLDADURA')"><span class="ico">⚡</span>SOLDADURA</button>
@@ -264,28 +302,25 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
     </div>
   </div>
 
-  <!-- ══ SECTION B ══ -->
+  <!-- SECTION B -->
   <div class="screen btn-screen" id="screen-b">
     <div class="sec-label">Paso 2 de 3</div>
     <div class="sec-title" id="secb-title">Sección B</div>
     <div id="secb-grid"></div>
   </div>
 
-  <!-- ══ SCAN & CAPTURE ══ -->
+  <!-- SCAN -->
   <div class="screen" id="screen-scan">
-
     <div id="alert-ok"   class="alert ok"><span class="alert-ico">✅</span><span id="alert-ok-t"></span></div>
     <div id="alert-err"  class="alert err"><span class="alert-ico">❌</span><span id="alert-err-t"></span></div>
     <div id="alert-warn" class="alert warn"><span class="alert-ico">⚠️</span><span id="alert-warn-t"></span></div>
     <div id="unlock-banner" class="unlock-banner"><span id="unlock-txt"></span></div>
 
-    <!-- SCANNER SECTION -->
     <div id="scan-section">
       <div class="cam-selector">
         <button class="cam-opt on" id="cc-env" onclick="switchCam('env')">📷 Cámara</button>
         <button class="cam-opt" id="cc-ir"  onclick="switchCam('ir')">🔴 Lector</button>
       </div>
-
       <div id="cam-wrap" style="display:none">
         <div class="scan-wrap">
           <video id="scan-vid" autoplay playsinline muted></video>
@@ -300,7 +335,6 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         </div>
         <canvas id="scan-canvas" style="display:none"></canvas>
       </div>
-
       <div id="ir-wrap" style="display:none">
         <div class="ir-panel">
           <div class="ir-ico">🔴</div>
@@ -310,16 +344,20 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         <input id="scan-ir-inp" type="text" style="position:absolute;opacity:0;width:1px;height:1px"
           autocomplete="off" oninput="onScanBarcode(this.value)">
       </div>
-
       <button class="btn btn-blue" id="cam-btn" onclick="activateCam()">📷 Activar cámara</button>
       <div class="scan-status" id="scan-status">
         <div class="pulse-wrap"><div class="dot"></div>Listo para escanear</div>
       </div>
     </div>
 
-    <!-- RESULT SECTION -->
     <div id="result-section" style="display:none">
       <div class="bc" id="bc"></div>
+
+      <!-- Aviso duplicado — aparece AL ESCANEAR, antes de capturar -->
+      <div class="dup-card" id="dup-card">
+        <h4>⚠️ Sebango ya registrado</h4>
+        <p id="dup-msg">Este sebango ya fue capturado en esta ubicación. Se requerirá autorización GL al presionar Capturar.</p>
+      </div>
 
       <div class="card">
         <div class="lbl">Sebango</div>
@@ -327,6 +365,7 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
         <div class="chips">
           <span class="chip orange">📍 <span id="res-ub">—</span></span>
           <span class="chip blue">📦 QPC: <span id="res-qpc">—</span></span>
+          <span class="chip red" id="loc-chip" style="display:none"></span>
         </div>
         <div class="card-meta" id="res-meta">—</div>
         <div class="conteo-badge" id="res-conteo">—</div>
@@ -343,11 +382,10 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
             <button class="num-btn" onclick="adj('cajas',1)">+</button>
           </div>
         </div>
-
         <div id="partial-wrap" style="display:none">
           <div class="toggle-row" onclick="togglePartial()">
             <div class="toggle" id="tog"><div class="toggle-knob"></div></div>
-            <span style="font-size:14px;font-weight:600">¿Hay parcial?</span>
+            <span style="font-size:var(--fs-m);font-weight:600">¿Hay parcial?</span>
           </div>
           <div class="inp-row" id="partial-inp-row" style="display:none">
             <label>Pzas</label>
@@ -359,48 +397,42 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
             </div>
           </div>
         </div>
-
         <div class="total-box">
           <span class="tl">Total piezas</span>
           <span class="tv" id="total-pzas">0</span>
         </div>
       </div>
 
-      <button class="btn btn-blue" id="btn-cap" onclick="doCapture()">💾 Capturar</button>
-      <button class="btn btn-green" id="btn-next" style="display:none" onclick="nextCapture()">➕ Siguiente captura</button>
+      <button class="btn btn-blue"    id="btn-cap"   onclick="doCapture()">💾 Capturar</button>
+      <button class="btn btn-green"   id="btn-next"  style="display:none" onclick="nextCapture()">➕ Siguiente captura</button>
       <button class="btn btn-outline" id="btn-rescan" onclick="rescan()">🔄 Volver a escanear</button>
 
       <div id="hist-wrap" style="display:none;margin-top:8px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:6px">Capturas recientes</div>
+        <div style="font-size:var(--fs-xs);font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:6px">Capturas recientes</div>
         <div id="hist"></div>
       </div>
     </div>
-
-  </div><!-- /screen-scan -->
-
-</div><!-- /screens -->
+  </div>
+</div>
 
 <!-- GL MODAL -->
 <div class="modal-bg" id="gl-modal">
   <div class="modal">
-    <h2>🔒 Sebango ya capturado</h2>
-    <p id="gl-msg">Este sebango ya tiene captura en esta ubicación. Se requiere autorización de GL para registrar una corrección.</p>
-
+    <h2>🔒 Autorización GL requerida</h2>
+    <p id="gl-msg">Sebango ya registrado en esta ubicación. Un GL debe autorizar el registro.</p>
     <div class="cam-selector">
       <button class="cam-opt on" id="glm-manual" onclick="setGLMode('manual')">⌨️ Manual</button>
       <button class="cam-opt" id="glm-qr" onclick="setGLMode('qr')">📷 QR Credencial</button>
     </div>
-
     <div id="gl-manual">
       <select id="gl-sel"><option value="">— Selecciona GL —</option></select>
       <input type="number" id="gl-emp-inp" placeholder="N° empleado del GL" inputmode="numeric">
     </div>
-
     <div id="gl-qr" style="display:none">
-      <div class="scan-wrap" id="gl-scan-wrap" style="margin-bottom:8px">
-        <video id="gl-vid" autoplay playsinline muted style="max-height:160px;object-fit:cover"></video>
+      <div class="scan-wrap" style="margin-bottom:8px">
+        <video id="gl-vid" autoplay playsinline muted style="max-height:clamp(130px,22vw,180px);object-fit:cover"></video>
         <div class="scan-overlay">
-          <div class="scan-frame" style="width:140px;height:140px">
+          <div class="scan-frame" style="width:130px;height:130px">
             <div class="sf-c sf-tl"></div><div class="sf-c sf-tr"></div>
             <div class="sf-c sf-br"></div><div class="sf-c sf-bl"></div>
             <div class="sf-line"></div>
@@ -410,13 +442,12 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
       <canvas id="gl-canvas" style="display:none"></canvas>
       <div class="cam-selector" style="margin-bottom:8px">
         <button class="cam-opt on" id="gl-cam-env" onclick="setGLCam('env')">📷 Cámara</button>
-        <button class="cam-opt" id="gl-cam-ir" onclick="setGLCam('ir')">🔴 Lector</button>
+        <button class="cam-opt" id="gl-cam-ir"  onclick="setGLCam('ir')">🔴 Lector</button>
       </div>
       <input id="gl-ir-inp" type="text" style="position:absolute;opacity:0;width:1px;height:1px"
         autocomplete="off" oninput="onGLBarcode(this.value)">
-      <div id="gl-qr-status" style="font-size:12px;color:var(--txt);text-align:center;margin-bottom:8px;min-height:18px"></div>
+      <div id="gl-qr-status" style="font-size:var(--fs-xs);color:var(--txt);text-align:center;margin-bottom:8px;min-height:18px"></div>
     </div>
-
     <div id="gl-alert" class="alert err" style="margin-bottom:8px"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeGL()">Cancelar</button>
@@ -428,910 +459,544 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--dark)}
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbzV8QS_0MoziKQNWYbvJx9B5phRFEBxqzejlNNjAjX8-AreoNrpE-nE12v9hUxR2Rpf/exec';
+const API='https://script.google.com/macros/s/AKfycbzV8QS_0MoziKQNWYbvJx9B5phRFEBxqzejlNNjAjX8-AreoNrpE-nE12v9hUxR2Rpf/exec';
 
-const GL = [
+const GL=[
   {a:'SOLDADURA',e:10145,n:'BRYAN FLORES HERNANDEZ'},
   {a:'SOLDADURA',e:10053,n:'JESUS IVAN HERNANDEZ HERNÁNDEZ'},
   {a:'SOLDADURA',e:10028,n:'LUIS RUBEN RAMÍREZ LEON'},
   {a:'SOLDADURA',e:10064,n:'KARINA GISELA ESPINOZA CAMPOS'},
   {a:'SOLDADURA',e:10144,n:'OMAR FIDENCIO TRUJILLO GONZALEZ'},
   {a:'SOLDADURA',e:10092,n:'ARTURO HERNANDEZ TENIENTE'},
-  {a:'LOGISTICA',e:10118,n:'DIANA GUADALUPE MENDOZA ROSAS'},
-  {a:'LOGISTICA',e:10036,n:'SANDRA RODRIGUEZ GARCIA'},
-  {a:'LOGISTICA',e:10012,n:'SANDRA SOLANO ALATORRE'},
-  {a:'LOGISTICA',e:10041,n:'CARLOS ANTONIO PEREZ RODRIGUEZ'},
-  {a:'PRENSAS',  e:10673,n:'PEDRO TORRES GUERRERO'},
-  {a:'PRENSAS',  e:10808,n:'MELISSA BERENIS ARMENTA VALENCIA'},
-  {a:'PRENSAS',  e:10013,n:'JOSÉ JUAN PALACIOS NARANJO'},
-  {a:'PRENSAS',  e:10262,n:'LUIS ANGEL SERRANO MELENDEZ'},
-  {a:'PC',       e:10037,n:'MENDEZ AVALOS EDGAR MANUEL'},
-  {a:'PC',       e:10139,n:'BOLAÑOS SANCHEZ RAUL ENRIQUE'},
-  {a:'PC',       e:11268,n:'ZARCO ARRIOLA ALEJANDRA'},
-  {a:'PC',       e:11408,n:'FIGUEROA CAPOTE DANIEL'},
-  {a:'PC',       e:11480,n:'RAMIREZ MOYA ITZEL DANIELA'},
-  {a:'PC',       e:11481,n:'RODRIGUEZ CANO RENATA ALEJANDRA'},
-  {a:'PC',       e:11531,n:'CONTRERAS RAMIREZ GABRIEL ANTONIO'},
+  {a:'LOGISTICA', e:10118,n:'DIANA GUADALUPE MENDOZA ROSAS'},
+  {a:'LOGISTICA', e:10036,n:'SANDRA RODRIGUEZ GARCIA'},
+  {a:'LOGISTICA', e:10012,n:'SANDRA SOLANO ALATORRE'},
+  {a:'LOGISTICA', e:10041,n:'CARLOS ANTONIO PEREZ RODRIGUEZ'},
+  {a:'PRENSAS',   e:10673,n:'PEDRO TORRES GUERRERO'},
+  {a:'PRENSAS',   e:10808,n:'MELISSA BERENIS ARMENTA VALENCIA'},
+  {a:'PRENSAS',   e:10013,n:'JOSÉ JUAN PALACIOS NARANJO'},
+  {a:'PRENSAS',   e:10262,n:'LUIS ANGEL SERRANO MELENDEZ'},
+  {a:'PC',        e:10037,n:'MENDEZ AVALOS EDGAR MANUEL'},
+  {a:'PC',        e:10139,n:'BOLAÑOS SANCHEZ RAUL ENRIQUE'},
+  {a:'PC',        e:11268,n:'ZARCO ARRIOLA ALEJANDRA'},
+  {a:'PC',        e:11408,n:'FIGUEROA CAPOTE DANIEL'},
+  {a:'PC',        e:11480,n:'RAMIREZ MOYA ITZEL DANIELA'},
+  {a:'PC',        e:11481,n:'RODRIGUEZ CANO RENATA ALEJANDRA'},
+  {a:'PC',        e:11531,n:'CONTRERAS RAMIREZ GABRIEL ANTONIO'},
 ];
 
-const SECB = {
-  PRENSAS:   ['BL','TRS','PGS'],
-  SOLDADURA: ['B01','B02','B03','B04','B05','B06','C01','C02','C03','C04',
-              'D01','D02','D03','D04','E01','E02','E03','E04','E05','E06',
-              'F01','F02','F03','F04','G01','G02','G03','G04','G05','A01'],
-  LOGISTICA: ['BUFFER','E-COAT',"OSP'S",'TTMX','BC SHUTTER','BC CONTAINERS',
-              'F3A','F3B','F3C','F3D','F5B','CONVEYORS','RECIBO','CSP']
+const SECB={
+  PRENSAS:  ['BL','TRS','PGS'],
+  SOLDADURA:['B01','B02','B03','B04','B05','B06','C01','C02','C03','C04',
+             'D01','D02','D03','D04','E01','E02','E03','E04','E05','E06',
+             'F01','F02','F03','F04','G01','G02','G03','G04','G05','A01'],
+  LOGISTICA:['BUFFER','E-COAT',"OSP'S",'TTMX','BC SHUTTER','BC CONTAINERS',
+             'F3A','F3B','F3C','F3D','F5B','CONVEYORS','RECIBO','CSP']
 };
 
-// ══════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════
-const S = {
-  screen: 'login',
-  user: null,
-  secA: null, secB: null,
-  seb: null, qpc: 0, ub: null, conteo: 1,
-  partial: false,
-  session: {},
-  pending: null,
-  // camera
-  stream: null, camActive: false, scanMode: 'env',
-  scanning: false, lastRaw: null,
-  // login
-  loginStream: null, loginScanning: false, loginMode: 'env',
-  // GL modal
-  glStream: null, glScanning: false, glCamMode: 'env', glAuthed: null,
-  _irFocus: null,
+/* ── CACHÉ ───────────────────────────────────────────── */
+const CACHE_KEY='inv_seb_v3';
+let _cache={};
+try{_cache=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');}catch(e){}
+const cacheGet=s=>_cache[s]||null;
+const cachePut=(s,d)=>{ _cache[s]=d; try{localStorage.setItem(CACHE_KEY,JSON.stringify(_cache));}catch(e){} };
+
+/* ── COLA OFFLINE ────────────────────────────────────── */
+const QK='inv_q_v3';
+let _q=[];
+try{_q=JSON.parse(localStorage.getItem(QK)||'[]');}catch(e){}
+const qSave=()=>{ try{localStorage.setItem(QK,JSON.stringify(_q));}catch(e){} };
+const qAdd=item=>{ _q.push({...item,ts:Date.now()}); qSave(); badge(); };
+const qDel=ts=>{ _q=_q.filter(i=>i.ts!==ts); qSave(); badge(); };
+
+async function flushQ(){
+  if(!_q.length) return;
+  const it=_q[0];
+  try{
+    const c=new AbortController(); setTimeout(()=>c.abort(),12000);
+    const p=new URLSearchParams({action:'save',sebango:it.seb,secA:it.secA,secB:it.secB,
+      cajas:it.cajas,parcialPzas:it.pzas,conteo:it.conteo,usuario:it.usuario});
+    const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:c.signal});
+    const d=await r.json();
+    if(d.success||d.ok){ qDel(it.ts); if(_q.length) setTimeout(flushQ,500); else showAlert('ok','✅ Capturas pendientes sincronizadas'); }
+  }catch(e){}
+}
+window.addEventListener('online',()=>{ if(_q.length) flushQ(); });
+
+function badge(){
+  let b=$('qb');
+  if(!b){ b=document.createElement('div'); b.id='qb';
+    b.style.cssText='background:#e37400;color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;display:none;margin-right:4px;flex-shrink:0';
+    $('hdr').insertBefore(b,$('back-btn')); }
+  b.style.display=_q.length?'block':'none';
+  if(_q.length) b.textContent=`📥 ${_q.length}`;
+}
+
+/* ── STATE ───────────────────────────────────────────── */
+const S={
+  screen:'login',user:null,
+  secA:null,secB:null,
+  seb:null,qpc:0,ub:null,conteo:1,
+  partial:false,session:{},pending:null,
+  isDup:false,
+  stream:null,camActive:false,scanMode:'env',scanning:false,lastRaw:null,
+  loginStream:null,loginScanning:false,loginMode:'env',
+  glStream:null,glScanning:false,glCamMode:'env',glAuthed:null,
+  _irFocus:null,
 };
 
-// ══════════════════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════════════════
-const $ = id => document.getElementById(id);
+/* ── UTILS ───────────────────────────────────────────── */
+const $=id=>document.getElementById(id);
+function showScreen(n){ document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active')); const e=$('screen-'+n); if(e) e.classList.add('active'); S.screen=n; }
+function setHdrSub(t){ $('hdr-sub').textContent=t; }
+function hideAlerts(){ ['ok','err','warn'].forEach(t=>$('alert-'+t).classList.remove('show')); $('unlock-banner').classList.remove('show'); }
+function showAlert(type,msg,persist){ hideAlerts(); $('alert-'+type+'-t').textContent=msg; $('alert-'+type).classList.add('show'); if(!persist) setTimeout(()=>$('alert-'+type).classList.remove('show'),5500); }
+function showUnlock(msg){ $('unlock-txt').textContent=msg; $('unlock-banner').classList.add('show'); }
+function extractEmp(raw){ const m=raw.match(/\b(1\d{4})\b/); return m?parseInt(m[1]):null; }
+function extractSeb(raw){ let m=raw.match(/\b([KTAHXktahx]\d{3})\b/); if(m) return m[1].toUpperCase(); m=raw.match(/(?<![A-Za-z])([KTAHXktahx])(\d{3})/); if(m) return (m[1]+m[2]).toUpperCase(); return null; }
+function cLabel(n){ return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo'; }
 
-function showScreen(name) {
-  // Oculta TODAS las pantallas quitando .active
-  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-  // Muestra solo la solicitada
-  const el = $('screen-' + name);
-  if (el) el.classList.add('active');
-  S.screen = name;
-}
-
-function setHdrSub(t){ $('hdr-sub').textContent = t }
-
-function hideAlerts(){
-  ['ok','err','warn'].forEach(t => $('alert-'+t).classList.remove('show'));
-  $('unlock-banner').classList.remove('show');
-}
-function showAlert(type, msg, persist){
-  hideAlerts();
-  $('alert-'+type+'-t').textContent = msg;
-  $('alert-'+type).classList.add('show');
-  if (!persist) setTimeout(() => $('alert-'+type).classList.remove('show'), 5000);
-}
-function showUnlock(msg){
-  $('unlock-txt').textContent = msg;
-  $('unlock-banner').classList.add('show');
-}
-
-function extractEmp(raw){
-  const m = raw.match(/\b(1\d{4})\b/);
-  return m ? parseInt(m[1]) : null;
-}
-
-function extractSeb(raw){
-  let m = raw.match(/\b([KTAHXktahx]\d{3})\b/);
-  if (m) return m[1].toUpperCase();
-  m = raw.match(/(?<![A-Za-z])([KTAHXktahx])(\d{3})/);
-  if (m) return (m[1]+m[2]).toUpperCase();
-  return null;
-}
-
-// ══════════════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════════════
+/* ── NAV ─────────────────────────────────────────────── */
 function goBack(){
-  if (S.screen === 'scan'){
-    stopScanCam();
-    setHdrSub(S.secA);
-    $('back-btn').style.display = 'block';
-    showScreen('b');
-  } else if (S.screen === 'b'){
-    setHdrSub('Selecciona el área');
-    S.secA = null;
-    showScreen('a');
-  } else if (S.screen === 'a'){
-    S.user = null; S.session = {};
-    $('hdr-badge').style.display = 'none';
-    $('back-btn').style.display = 'none';
-    setHdrSub('Identificación requerida');
-    resetLoginUI();
-    showScreen('login');
-  }
+  if(S.screen==='scan'){ stopScanCam(); setHdrSub(S.secA); showScreen('b'); }
+  else if(S.screen==='b'){ setHdrSub('Selecciona el área'); S.secA=null; showScreen('a'); }
+  else if(S.screen==='a'){ S.user=null; S.session={}; $('hdr-badge').style.display='none'; $('back-btn').style.display='none'; setHdrSub('Identificación requerida'); resetLoginUI(); showScreen('login'); }
 }
 
-// ══════════════════════════════════════════════════════════
-// LOGIN
-// ══════════════════════════════════════════════════════════
+/* ── LOGIN ───────────────────────────────────────────── */
 function resetLoginUI(){
   stopLoginCam();
-  $('login-scanner-wrap').style.display = 'none';
-  $('login-ir-wrap').style.display = 'none';
-  $('login-btn').style.display = 'flex';
-  $('login-btn').textContent = '📷 Activar cámara';
-  $('login-btn').disabled = false;
-  $('login-status').textContent = '';
+  $('login-scanner-wrap').style.display='none';
+  $('login-ir-wrap').style.display='none';
+  $('login-btn').style.display='flex';
+  $('login-btn').textContent='📷 Activar cámara';
+  $('login-btn').disabled=false;
+  $('login-status').textContent='';
+  $('emp-manual-inp').value='';
 }
+
+function onManualEmpInput(v){ $('emp-manual-inp').value=v.replace(/\D/g,'').slice(0,5); }
+function submitManualEmp(){
+  const v=$('emp-manual-inp').value.trim();
+  const emp=extractEmp(v);
+  if(emp) loginSuccess(emp);
+  else $('login-status').innerHTML=`<span style="color:var(--red)">⚠️ Número inválido — debe ser 1XXXX (5 dígitos)</span>`;
+}
+
+// Enter en campo empleado
+window.addEventListener('DOMContentLoaded',()=>{
+  $('emp-manual-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') submitManualEmp(); });
+});
 
 function setLoginCam(m){
-  S.loginMode = m;
-  $('lc-env').className = 'cam-opt' + (m==='env'?' on':'');
-  $('lc-ir').className  = 'cam-opt' + (m==='ir' ?' on':'');
-  if (S.loginScanning || S.loginStream) startLoginScan();
+  S.loginMode=m;
+  $('lc-env').className='cam-opt'+(m==='env'?' on':'');
+  $('lc-ir').className ='cam-opt'+(m==='ir' ?' on':'');
+  if(S.loginScanning||S.loginStream) startLoginScan();
 }
-
 async function startLoginScan(){
-  $('login-btn').style.display = 'none';
-  $('login-status').innerHTML = '<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial...</div>';
-
-  if (S.loginMode === 'ir'){
-    $('login-scanner-wrap').style.display = 'none';
-    $('login-ir-wrap').style.display = 'block';
-    setTimeout(() => { $('login-ir-inp').value=''; $('login-ir-inp').focus(); }, 50);
-    S.loginScanning = true;
-    return;
+  $('login-btn').style.display='none';
+  $('login-status').innerHTML='<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial...</div>';
+  if(S.loginMode==='ir'){
+    $('login-scanner-wrap').style.display='none'; $('login-ir-wrap').style.display='block';
+    setTimeout(()=>{ $('login-ir-inp').value=''; $('login-ir-inp').focus(); },50);
+    S.loginScanning=true; return;
   }
-
-  $('login-ir-wrap').style.display = 'none';
-  $('login-scanner-wrap').style.display = 'block';
-  try {
-    S.loginStream = await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
-    });
-    $('login-vid').srcObject = S.loginStream;
-    await $('login-vid').play();
-    S.loginScanning = true;
-    loginScanLoop();
-  } catch(e){
-    $('login-btn').style.display = 'flex';
-    $('login-btn').textContent = '📷 Reintentar';
-    $('login-btn').disabled = false;
-    $('login-status').innerHTML = `<span style="color:var(--red)">⚠️ ${e.name==='NotAllowedError'?'Permiso denegado':e.message}</span>`;
+  $('login-ir-wrap').style.display='none'; $('login-scanner-wrap').style.display='block';
+  try{
+    S.loginStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    $('login-vid').srcObject=S.loginStream; await $('login-vid').play();
+    S.loginScanning=true; loginScanLoop();
+  }catch(e){
+    $('login-btn').style.display='flex'; $('login-btn').textContent='📷 Reintentar';
+    $('login-status').innerHTML=`<span style="color:var(--red)">⚠️ ${e.name==='NotAllowedError'?'Permiso denegado':e.message}</span>`;
   }
 }
-
 function loginScanLoop(){
-  if (!S.loginScanning) return;
-  const vid = $('login-vid'), cvs = $('login-canvas');
-  if (vid.readyState < 2){ requestAnimationFrame(loginScanLoop); return; }
-  const sz = Math.floor(Math.min(vid.videoWidth, vid.videoHeight) * 0.6);
-  cvs.width = sz; cvs.height = sz;
-  const ctx = cvs.getContext('2d', {willReadFrequently:true});
+  if(!S.loginScanning) return;
+  const vid=$('login-vid'),cvs=$('login-canvas');
+  if(vid.readyState<2){ requestAnimationFrame(loginScanLoop); return; }
+  const sz=Math.min(Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.65),420);
+  cvs.width=sz; cvs.height=sz;
+  const ctx=cvs.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
-  const img = ctx.getImageData(0,0,sz,sz);
-  if (typeof jsQR !== 'undefined'){
-    const code = jsQR(img.data, sz, sz, {inversionAttempts:'dontInvert'});
-    if (code?.data){ const emp = extractEmp(code.data); if (emp){ loginSuccess(emp); return; } }
+  if(typeof jsQR!=='undefined'){
+    const c=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz,{inversionAttempts:'dontInvert'});
+    if(c?.data){ const emp=extractEmp(c.data); if(emp){ loginSuccess(emp); return; } }
   }
   requestAnimationFrame(loginScanLoop);
 }
-
 function stopLoginCam(){
-  S.loginScanning = false;
-  if (S.loginStream){ S.loginStream.getTracks().forEach(t=>t.stop()); S.loginStream = null; }
-  const v = $('login-vid'); if(v) v.srcObject = null;
+  S.loginScanning=false;
+  if(S.loginStream){ S.loginStream.getTracks().forEach(t=>t.stop()); S.loginStream=null; }
+  const v=$('login-vid'); if(v) v.srcObject=null;
 }
-
-let _loginBuf = null;
+let _lbuf=null;
 function onLoginBarcode(val){
-  clearTimeout(_loginBuf);
-  _loginBuf = setTimeout(()=>{
-    const raw = val.trim();
-    $('login-ir-inp').value = '';
-    setTimeout(()=>$('login-ir-inp').focus(), 50);
-    if (!raw) return;
-    const emp = extractEmp(raw);
-    if (emp) loginSuccess(emp);
-    else $('login-status').innerHTML = `<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
-  }, 150);
+  clearTimeout(_lbuf);
+  _lbuf=setTimeout(()=>{
+    const raw=val.trim(); $('login-ir-inp').value='';
+    setTimeout(()=>$('login-ir-inp').focus(),50);
+    if(!raw) return;
+    const emp=extractEmp(raw);
+    if(emp) loginSuccess(emp);
+    else $('login-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
+  },120);
 }
-
 function loginSuccess(emp){
   stopLoginCam();
-  const known = GL.find(g => g.e === emp);
-  S.user = known || {e: emp, n: `Empleado #${emp}`, a: 'N/A'};
-  const name = S.user.n.split(' ').slice(0,2).join(' ');
-  $('hdr-name').textContent = name;
-  $('hdr-emp').textContent = '#' + S.user.e;
-  $('hdr-badge').style.display = 'flex';
-  $('back-btn').style.display = 'block';
+  const known=GL.find(g=>g.e===emp);
+  S.user=known||{e:emp,n:`Empleado`,a:'N/A'};
+  // Header: #XXXXX — NOMBRE (2 primeras palabras) + resto abajo
+  const parts=S.user.n.split(' ');
+  $('hdr-name').textContent=`#${S.user.e} — ${parts.slice(0,2).join(' ')}`;
+  $('hdr-emp').textContent=parts.slice(2).join(' ')||'';
+  $('hdr-badge').style.display='flex';
+  $('back-btn').style.display='block';
   setHdrSub('Selecciona el área');
   showScreen('a');
 }
 
-// ══════════════════════════════════════════════════════════
-// SECTION A & B
-// ══════════════════════════════════════════════════════════
+/* ── SECTION A / B ───────────────────────────────────── */
 function selectA(area){
-  S.secA = area;
-  setHdrSub(area);
-  $('secb-title').textContent = `${area} — Ubicación`;
-  const grid = $('secb-grid');
-  const items = SECB[area];
-  grid.innerHTML = '';
-  const cols = items.length <= 1 ? 1 : items.length <= 2 ? 2 : 3;
-  grid.style.gridTemplateColumns = `repeat(${cols},1fr)`;
-  items.forEach(sec => {
-    const b = document.createElement('button');
-    b.className = 'area-btn small';
-    b.textContent = sec;
-    b.onclick = () => selectB(sec);
-    grid.appendChild(b);
+  S.secA=area; setHdrSub(area);
+  $('secb-title').textContent=`${area} — Ubicación`;
+  const grid=$('secb-grid'); const items=SECB[area];
+  grid.innerHTML='';
+  const cols=items.length<=1?1:items.length<=2?2:3;
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  items.forEach(sec=>{
+    const b=document.createElement('button');
+    b.className='secb-btn'; b.textContent=sec;
+    b.onclick=()=>selectB(sec); grid.appendChild(b);
   });
-  showScreen('b');
-  $('back-btn').style.display = 'block';
+  showScreen('b'); $('back-btn').style.display='block';
 }
-
 function selectB(sec){
-  S.secB = sec;
-  setHdrSub(S.secA + ' › ' + sec);
-  resetScanScreen();
-  showScreen('scan');
-  activateCam();
+  S.secB=sec; setHdrSub(S.secA+' › '+sec);
+  resetScanScreen(); showScreen('scan'); activateCam();
 }
 
-// ══════════════════════════════════════════════════════════
-// CAMERA — SCAN MODE
-// ══════════════════════════════════════════════════════════
+/* ── SCAN CAMERA ─────────────────────────────────────── */
 function resetScanScreen(){
-  S.seb = null; S.qpc = 0; S.ub = null; S.scanning = false; S.lastRaw = null;
+  S.seb=null; S.qpc=0; S.ub=null; S.scanning=false; S.lastRaw=null; S.isDup=false;
   hideAlerts();
-  $('scan-section').style.display = 'block';
-  $('result-section').style.display = 'none';
-  $('btn-next').style.display = 'none';
-  $('btn-cap').style.display = 'flex';
-  $('btn-cap').disabled = false;
-  $('btn-cap').textContent = '💾 Capturar';
-  $('btn-rescan').style.display = 'block';
+  $('scan-section').style.display='block';
+  $('result-section').style.display='none';
+  $('dup-card').classList.remove('show');
+  $('loc-chip').style.display='none';
+  $('btn-next').style.display='none';
+  $('btn-cap').style.display='flex';
+  $('btn-cap').disabled=false;
+  $('btn-cap').textContent='💾 Capturar';
+  $('btn-rescan').style.display='block';
   setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Listo para escanear</div>');
 }
-
-function setScanStatus(html, cls=''){
-  const el = $('scan-status');
-  el.innerHTML = html;
-  el.className = 'scan-status ' + cls;
-}
-
+function setScanStatus(html,cls=''){ const el=$('scan-status'); el.innerHTML=html; el.className='scan-status '+cls; }
 function switchCam(m){
-  S.scanMode = m;
-  $('cc-env').className = 'cam-opt' + (m==='env'?' on':'');
-  $('cc-ir').className  = 'cam-opt' + (m==='ir' ?' on':'');
+  S.scanMode=m;
+  $('cc-env').className='cam-opt'+(m==='env'?' on':'');
+  $('cc-ir').className ='cam-opt'+(m==='ir' ?' on':'');
   activateCam();
 }
-
 async function activateCam(){
-  stopScanCam();
-  $('cam-btn').style.display = 'none';
+  stopScanCam(); $('cam-btn').style.display='none';
   setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Activando...</div>');
-
-  if (S.scanMode === 'ir'){
-    $('cam-wrap').style.display = 'none';
-    $('ir-wrap').style.display = 'block';
-    setTimeout(()=>{ $('scan-ir-inp').value=''; $('scan-ir-inp').focus(); }, 50);
+  if(S.scanMode==='ir'){
+    $('cam-wrap').style.display='none'; $('ir-wrap').style.display='block';
+    setTimeout(()=>{ $('scan-ir-inp').value=''; $('scan-ir-inp').focus(); },50);
     setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Lector activo — presiona el gatillo</div>');
     clearInterval(S._irFocus);
-    S._irFocus = setInterval(()=>{
-      if(S.scanMode==='ir' && $('screen-scan').classList.contains('active'))
-        $('scan-ir-inp').focus();
-      else clearInterval(S._irFocus);
-    }, 1500);
+    S._irFocus=setInterval(()=>{ if(S.scanMode==='ir'&&$('screen-scan').classList.contains('active')) $('scan-ir-inp').focus(); else clearInterval(S._irFocus); },1500);
     return;
   }
-
-  $('ir-wrap').style.display = 'none';
-  $('cam-wrap').style.display = 'block';
-  try {
-    S.stream = await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
-    });
-    const vid = $('scan-vid');
-    vid.srcObject = S.stream;
-    await vid.play();
-    S.camActive = true;
-    S.scanning = true;
+  $('ir-wrap').style.display='none'; $('cam-wrap').style.display='block';
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    $('scan-vid').srcObject=S.stream; await $('scan-vid').play();
+    S.camActive=true; S.scanning=true;
     setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Escaneando...</div>');
     scanLoop();
-  } catch(e){
-    S.camActive = false;
-    $('cam-btn').style.display = 'flex';
-    $('cam-btn').textContent = '📷 Reintentar';
-    let msg = '⚠️ Sin acceso a cámara.';
-    if (e.name==='NotAllowedError') msg='🔒 Permiso denegado — actívalo en ajustes del navegador';
-    else if (e.name==='NotFoundError') msg='📵 Cámara no encontrada';
-    setScanStatus(msg, 'err');
+  }catch(e){
+    S.camActive=false; $('cam-btn').style.display='flex'; $('cam-btn').textContent='📷 Reintentar';
+    setScanStatus(e.name==='NotAllowedError'?'🔒 Permiso denegado':e.name==='NotFoundError'?'📵 Cámara no encontrada':'⚠️ Error de cámara','err');
   }
 }
 
-// ─── OPTIMIZACIÓN DE ESCANEO ──────────────────────────────
-// • Canvas reducido a 400px máx (jsQR no necesita más para QR)
-// • OffscreenCanvas cuando el browser lo soporta (más rápido)
-// • 15fps (~66ms) en modo normal; si el video no está listo
-//   espera 80ms en lugar de ciclar rápido innecesariamente
-// ─────────────────────────────────────────────────────────
-const SCAN_SIZE = 400;   // px — tamaño máx del crop a procesar
-let _scanThrottle = null;
-let _offCtx = null;      // OffscreenCanvas context (si disponible)
-
+const SCAN_MAX=400; let _st=null,_offCtx=null;
 function getScanCtx(sz){
-  // Intenta reutilizar OffscreenCanvas para evitar reflow
-  if (typeof OffscreenCanvas !== 'undefined'){
-    if (!_offCtx || _offCtx.canvas.width !== sz){
-      const oc = new OffscreenCanvas(sz, sz);
-      _offCtx = oc.getContext('2d', {willReadFrequently: true});
-    }
+  if(typeof OffscreenCanvas!=='undefined'){
+    if(!_offCtx||_offCtx.canvas.width!==sz){ const oc=new OffscreenCanvas(sz,sz); _offCtx=oc.getContext('2d',{willReadFrequently:true}); }
     return _offCtx;
   }
-  // Fallback: canvas DOM oculto
-  const cvs = $('scan-canvas');
-  cvs.width = sz; cvs.height = sz;
-  return cvs.getContext('2d', {willReadFrequently: true});
+  const c=$('scan-canvas'); c.width=sz; c.height=sz; return c.getContext('2d',{willReadFrequently:true});
 }
-
 function scanLoop(){
-  if (!S.scanning || !S.stream) return;
-  const vid = $('scan-vid');
-  if (vid.readyState < 2){
-    _scanThrottle = setTimeout(scanLoop, 80);
-    return;
+  if(!S.scanning||!S.stream) return;
+  const vid=$('scan-vid');
+  if(vid.readyState<2){ _st=setTimeout(scanLoop,80); return; }
+  const raw=Math.min(vid.videoWidth,vid.videoHeight);
+  const sz=Math.min(raw,SCAN_MAX);
+  const ctx=getScanCtx(sz);
+  ctx.drawImage(vid,(vid.videoWidth-raw)/2,(vid.videoHeight-raw)/2,raw,raw,0,0,sz,sz);
+  if(typeof jsQR!=='undefined'){
+    const code=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz,{inversionAttempts:'dontInvert'});
+    if(code?.data&&code.data!==S.lastRaw){ S.lastRaw=code.data; const seb=extractSeb(code.data); if(seb){ S.scanning=false; clearTimeout(_st); onSebango(seb); return; } }
   }
-  // Crop cuadrado central, máx SCAN_SIZE px
-  const raw = Math.min(vid.videoWidth, vid.videoHeight);
-  const sz  = Math.min(raw, SCAN_SIZE);
-  const ctx = getScanCtx(sz);
-  const sx  = (vid.videoWidth  - raw) / 2;
-  const sy  = (vid.videoHeight - raw) / 2;
-  ctx.drawImage(vid, sx, sy, raw, raw, 0, 0, sz, sz);
-  if (typeof jsQR !== 'undefined'){
-    const img  = ctx.getImageData(0, 0, sz, sz);
-    const code = jsQR(img.data, sz, sz, {inversionAttempts:'dontInvert'});
-    if (code?.data && code.data !== S.lastRaw){
-      S.lastRaw = code.data;
-      const seb = extractSeb(code.data);
-      if (seb){ S.scanning = false; clearTimeout(_scanThrottle); onSebango(seb); return; }
-    }
-  }
-  _scanThrottle = setTimeout(scanLoop, 66); // ~15 fps
+  _st=setTimeout(scanLoop,66);
 }
-
 function stopScanCam(){
-  S.scanning = false; S.camActive = false;
-  clearTimeout(_scanThrottle);
-  clearInterval(S._irFocus);
-  _offCtx = null;
-  if (S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
-  const v = $('scan-vid'); if(v) v.srcObject=null;
+  S.scanning=false; S.camActive=false; clearTimeout(_st); clearInterval(S._irFocus); _offCtx=null;
+  if(S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
+  const v=$('scan-vid'); if(v) v.srcObject=null;
 }
-
-let _irBuf = null;
+let _irb=null;
 function onScanBarcode(val){
-  clearTimeout(_irBuf);
-  _irBuf = setTimeout(()=>{
-    const raw = val.trim();
-    $('scan-ir-inp').value = '';
-    if (!raw) return;
-    const seb = extractSeb(raw);
-    if (seb){ onSebango(seb); }
-    else setScanStatus('⚠️ No se encontró sebango en el código leído','err');
-  }, 100); // reducido de 150→100ms para mayor velocidad
+  clearTimeout(_irb);
+  _irb=setTimeout(()=>{
+    const raw=val.trim(); $('scan-ir-inp').value='';
+    if(!raw) return;
+    const seb=extractSeb(raw);
+    if(seb) onSebango(seb); else setScanStatus('⚠️ No se encontró sebango en el código leído','err');
+  },100);
 }
 
-// ══════════════════════════════════════════════════════════
-// CACHÉ LOCAL DE SEBANGS  (IndexedDB-lite via localStorage)
-// Guarda {qpc, ubicacion} para cada sebango ya consultado.
-// Así el segundo escaneo del mismo sebango es INSTANTÁNEO.
-// ══════════════════════════════════════════════════════════
-const CACHE_KEY = 'inv_seb_cache_v1';
-let _sebCache = {};
-try { _sebCache = JSON.parse(localStorage.getItem(CACHE_KEY)||'{}'); } catch(e){}
-function cacheGet(seb){ return _sebCache[seb] || null; }
-function cachePut(seb, data){
-  _sebCache[seb] = data;
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(_sebCache)); } catch(e){}
-}
-
-// ══════════════════════════════════════════════════════════
-// COLA DE GUARDADO  (offline queue)
-// Si no hay conexión, la captura se encola y se reintenta
-// automáticamente cada vez que el usuario presiona Capturar
-// o cuando detectamos que volvió la red.
-// ══════════════════════════════════════════════════════════
-const QUEUE_KEY = 'inv_save_queue_v1';
-let _saveQueue = [];
-try { _saveQueue = JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch(e){}
-
-function queuePersist(){
-  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(_saveQueue)); } catch(e){}
-}
-function queueAdd(item){
-  _saveQueue.push({...item, ts: Date.now()});
-  queuePersist();
-}
-function queueRemove(ts){
-  _saveQueue = _saveQueue.filter(i => i.ts !== ts);
-  queuePersist();
-}
-
-// Reintenta cola en background (sin bloquear UI)
-async function flushQueue(){
-  if (!_saveQueue.length) return;
-  const item = _saveQueue[0]; // procesar uno a la vez
-  try {
-    const params = new URLSearchParams({
-      action:'save', sebango:item.seb, secA:item.secA, secB:item.secB,
-      cajas:item.cajas, parcialPzas:item.pzas, conteo:item.conteo, usuario:item.usuario
-    });
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 12000);
-    const r = await fetch(`${API}?${params}`, {redirect:'follow', signal:ctrl.signal});
-    const d = await r.json();
-    if (d.success || d.ok){
-      queueRemove(item.ts);
-      if (_saveQueue.length) setTimeout(flushQueue, 500);
-      // Notificar si hay cola pendiente resuelta
-      if (!_saveQueue.length) showAlert('ok','✅ Capturas pendientes sincronizadas');
-    }
-  } catch(e){ /* sin conexión, se intentará después */ }
-}
-
-// Escuchar cuando vuelva la conexión
-window.addEventListener('online', () => { if(_saveQueue.length) flushQueue(); });
-
-// ══════════════════════════════════════════════════════════
-// SEBANGO FOUND — LOOKUP  (caché-first)
-// ──────────────────────────────────────────────────────────
-// Flujo:
-//  1. Revisar caché local → respuesta INMEDIATA si existe
-//  2. En paralelo hacer fetch al API (no bloquea la UI)
-//  3. Si el API responde, actualizar caché silenciosamente
-//
-// LÓGICA DE CONTEO:
-//  S.session[key] = último conteo YA GUARDADO en esta sesión
-//  Siguiente conteo = session[key]+1  (si ya existe en sesión)
-//                   = nextConteo del API (si es primera vez)
-// ══════════════════════════════════════════════════════════
+/* ── LOOKUP — caché-first + validación cruzada ───────── */
 async function onSebango(seb){
   stopScanCam();
-  $('scan-section').style.display = 'none';
-  $('result-section').style.display = 'block';
+  $('scan-section').style.display='none';
+  $('result-section').style.display='block';
   hideAlerts();
+  $('dup-card').classList.remove('show');
+  $('loc-chip').style.display='none';
+  $('res-seb').textContent=seb;
+  $('bc').innerHTML=`<span>${S.secA}</span><span style="color:var(--border);font-size:16px">›</span><span class="crumb">${S.secB}</span>`;
 
-  $('res-seb').textContent = seb;
-  $('bc').innerHTML = `<span>${S.secA}</span><span style="color:var(--border);font-size:16px">›</span><span class="crumb">${S.secB}</span>`;
+  const key=`${seb}||${S.secA}||${S.secB}`;
 
-  const key = `${seb}||${S.secA}||${S.secB}`;
-
-  // ── 1. CACHÉ: respuesta inmediata si ya lo conocemos ──
-  const cached = cacheGet(seb);
-  if (cached){
-    applyLookup(seb, key, cached, /*fromCache*/true);
-    // Refresca el nextConteo en background sin bloquear
-    fetchLookupBackground(seb, key);
-    return;
+  // ── Mostrar aviso duplicado INMEDIATAMENTE al escanear ──
+  S.isDup=(S.session[key]!==undefined);
+  if(S.isDup){
+    $('dup-msg').textContent=`${seb} ya fue capturado en ${S.secA} › ${S.secB} (${cLabel(S.session[key])}). Se pedirá autorización GL al capturar.`;
+    $('dup-card').classList.add('show');
   }
 
-  // ── 2. SIN CACHÉ: mostrar spinner y esperar ──
-  $('res-ub').textContent  = '...';
-  $('res-qpc').textContent = '...';
-  $('res-conteo').textContent = '...';
-  $('btn-cap').disabled = true;
+  const cached=cacheGet(seb);
+  if(cached){ applyLookup(seb,key,cached,true); fetchBg(seb,key); return; }
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 9000);
-  try {
-    const url = `${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
-    const r = await fetch(url, {redirect:'follow', signal: ctrl.signal});
-    clearTimeout(timer);
-    const d = await r.json();
-    if (d.found){
-      cachePut(seb, d);           // guardar en caché para próxima vez
-      applyLookup(seb, key, d, false);
-    } else {
-      showAlert('err', `Sebango ${seb} no encontrado en la base de datos`);
-      setTimeout(rescan, 3000);
-    }
-  } catch(e){
-    clearTimeout(timer);
-    // Sin conexión y sin caché → permitir captura con datos mínimos
-    S.seb = seb; S.qpc = 0; S.ub = seb;
-    S.conteo = S.session[key] !== undefined ? Math.min(S.session[key]+1, 3) : 1;
-    $('res-ub').textContent = '— sin conexión';
-    $('res-qpc').textContent = '?';
-    $('res-conteo').textContent = conteoLabel(S.conteo);
-    $('res-meta').textContent = `${S.secA} › ${S.secB}`;
-    showAlert('warn', e.name==='AbortError'
-      ? '⚠️ Sin respuesta del servidor — captura encolada sin conexión'
-      : '⚠️ Sin conexión — la captura se guardará cuando haya red');
-    setupInputs();
-    $('btn-cap').disabled = false;
+  $('res-ub').textContent='...'; $('res-qpc').textContent='...'; $('res-conteo').textContent='...';
+  $('btn-cap').disabled=true;
+
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),9000);
+  try{
+    const url=`${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
+    const r=await fetch(url,{redirect:'follow',signal:ctrl.signal}); clearTimeout(t);
+    const d=await r.json();
+    if(d.found){ cachePut(seb,d); applyLookup(seb,key,d,false); }
+    else{ showAlert('err',`Sebango ${seb} no encontrado`); setTimeout(rescan,3000); }
+  }catch(e){
+    clearTimeout(t);
+    S.seb=seb; S.qpc=0; S.ub=seb;
+    S.conteo=S.session[key]!==undefined?Math.min(S.session[key]+1,3):1;
+    $('res-ub').textContent='— sin conexión'; $('res-qpc').textContent='?';
+    $('res-meta').textContent=`${S.secA} › ${S.secB}`;
+    $('res-conteo').textContent=cLabel(S.conteo);
+    showAlert('warn',e.name==='AbortError'?'⚠️ Sin respuesta — modo offline':'⚠️ Sin conexión — captura offline');
+    setupInputs(); $('btn-cap').disabled=false;
   }
 }
 
-// Aplica los datos del lookup (caché o API) a la UI
-function applyLookup(seb, key, d, fromCache){
-  S.seb = seb;
-  S.qpc = +d.qpc || 0;
-  S.ub  = d.ubicacion || seb;
+function applyLookup(seb,key,d,fromCache){
+  S.seb=seb; S.qpc=+d.qpc||0; S.ub=d.ubicacion||seb;
 
-  // Calcular conteo correcto
-  if (S.session[key] !== undefined){
-    S.conteo = Math.min(S.session[key] + 1, 3);
-  } else {
-    S.conteo = Math.min(Math.max(1, parseInt(d.nextConteo)||1), 3);
+  // ── VALIDACIÓN CRUZADA DE UBICACIÓN ─────────────────────
+  // Compara la ubicación real del sheet (columna C del sebango)
+  // con la Sección B que el operador seleccionó.
+  // Si no coinciden → chip rojo de advertencia visible.
+  // No se bloquea la captura: el conteo físico puede diferir
+  // de la ubicación nominal en el catálogo.
+  const sheetUb=(d.ubicacion||'').toUpperCase().replace(/\s/g,'');
+  const selB=(S.secB||'').toUpperCase().replace(/\s/g,'');
+  // Considera coincidencia si uno contiene al otro (tolerancia de abreviaciones)
+  const match=!sheetUb||sheetUb===selB||sheetUb.includes(selB)||selB.includes(sheetUb);
+  if(!match&&sheetUb){
+    const chip=$('loc-chip');
+    chip.textContent=`⚠️ BD registra: ${d.ubicacion}`;
+    chip.style.display='inline-flex';
   }
+  // ─────────────────────────────────────────────────────────
 
-  $('res-ub').textContent      = S.ub;
-  $('res-qpc').textContent     = S.qpc;
-  $('res-meta').textContent    = `${S.secA} › ${S.secB}`;
-  $('res-conteo').textContent  = conteoLabel(S.conteo);
-  if (fromCache){
-    // Indicador sutil de que viene de caché
-    $('res-meta').textContent = `${S.secA} › ${S.secB}  ⚡`;
-  }
-  setupInputs();
-  $('btn-cap').disabled = false;
+  S.conteo=S.session[key]!==undefined?Math.min(S.session[key]+1,3):Math.min(Math.max(1,parseInt(d.nextConteo)||1),3);
+  $('res-ub').textContent=S.ub;
+  $('res-qpc').textContent=S.qpc;
+  $('res-meta').textContent=`${S.secA} › ${S.secB}`+(fromCache?' ⚡':'');
+  $('res-conteo').textContent=cLabel(S.conteo);
+  setupInputs(); $('btn-cap').disabled=false;
 }
 
-// Refresca nextConteo en background (no bloquea UI)
-async function fetchLookupBackground(seb, key){
-  try {
-    const ctrl = new AbortController();
-    setTimeout(()=>ctrl.abort(), 8000);
-    const url = `${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
-    const r = await fetch(url, {redirect:'follow', signal:ctrl.signal});
-    const d = await r.json();
-    if (d.found){
-      cachePut(seb, d);
-      // Si el usuario aún no capturó, actualizar conteo silenciosamente
-      if ($('btn-cap').disabled === false && S.seb === seb){
-        if (S.session[key] === undefined){
-          S.conteo = Math.min(Math.max(1, parseInt(d.nextConteo)||1), 3);
-          $('res-conteo').textContent = conteoLabel(S.conteo);
-          $('res-meta').textContent = `${S.secA} › ${S.secB}`;
-        }
-      }
-    }
-  } catch(e){ /* silencioso */ }
+async function fetchBg(seb,key){
+  try{
+    const c=new AbortController(); setTimeout(()=>c.abort(),8000);
+    const url=`${API}?action=lookup&sebango=${encodeURIComponent(seb)}&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
+    const r=await fetch(url,{redirect:'follow',signal:c.signal}); const d=await r.json();
+    if(d.found){ cachePut(seb,d); if($('btn-cap').disabled===false&&S.seb===seb&&S.session[key]===undefined){ S.conteo=Math.min(Math.max(1,parseInt(d.nextConteo)||1),3); $('res-conteo').textContent=cLabel(S.conteo); $('res-meta').textContent=`${S.secA} › ${S.secB}`; } }
+  }catch(e){}
 }
 
-function conteoLabel(n){ return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo'; }
-
+/* ── INPUTS ──────────────────────────────────────────── */
 function setupInputs(){
-  $('inp-cajas').value = 0;
-  $('inp-parcial').value = 0;
-  S.partial = false;
-  $('tog').classList.remove('on');
-  $('partial-inp-row').style.display = 'none';
-  if (S.secA !== 'LOGISTICA' && S.qpc > 0 && S.qpc < 30){
-    $('partial-wrap').style.display = 'block';
-  } else {
-    $('partial-wrap').style.display = 'none';
-  }
+  $('inp-cajas').value=0; $('inp-parcial').value=0; S.partial=false;
+  $('tog').classList.remove('on'); $('partial-inp-row').style.display='none';
+  $('partial-wrap').style.display=(S.secA!=='LOGISTICA'&&S.qpc>0&&S.qpc<30)?'block':'none';
   calcTotal();
 }
+function adj(f,d){ const id=f==='cajas'?'inp-cajas':'inp-parcial'; const el=$(id); el.value=Math.max(0,(parseInt(el.value)||0)+d); calcTotal(); }
+function togglePartial(){ S.partial=!S.partial; $('tog').classList.toggle('on',S.partial); $('partial-inp-row').style.display=S.partial?'flex':'none'; if(!S.partial) $('inp-parcial').value=0; calcTotal(); }
+function calcTotal(){ const c=parseInt($('inp-cajas').value)||0; let t=c*S.qpc; if(S.partial&&S.secA!=='LOGISTICA') t+=S.qpc>=30?Math.floor(S.qpc/2):(parseInt($('inp-parcial').value)||0); $('total-pzas').textContent=t; }
 
-function adj(field, delta){
-  const id = field==='cajas'?'inp-cajas':'inp-parcial';
-  const el = $(id);
-  el.value = Math.max(0, (parseInt(el.value)||0) + delta);
-  calcTotal();
-}
-
-function togglePartial(){
-  S.partial = !S.partial;
-  $('tog').classList.toggle('on', S.partial);
-  $('partial-inp-row').style.display = S.partial?'flex':'none';
-  if (!S.partial) $('inp-parcial').value=0;
-  calcTotal();
-}
-
-function calcTotal(){
-  const cajas = parseInt($('inp-cajas').value)||0;
-  let total = cajas * S.qpc;
-  if (S.partial && S.secA !== 'LOGISTICA'){
-    total += S.qpc >= 30 ? Math.floor(S.qpc/2) : (parseInt($('inp-parcial').value)||0);
-  }
-  $('total-pzas').textContent = total;
-}
-
-// ══════════════════════════════════════════════════════════
-// CAPTURE
-// ══════════════════════════════════════════════════════════
+/* ── CAPTURE ─────────────────────────────────────────── */
 async function doCapture(){
-  const seb   = S.seb;
-  const cajas = parseInt($('inp-cajas').value)||0;
-  const allowP = S.secA!=='LOGISTICA' && S.qpc<30 && S.partial;
-  const pzas   = allowP ? (parseInt($('inp-parcial').value)||0) : 0;
-  const key    = `${seb}||${S.secA}||${S.secB}`;
-
-  // Si YA existe en sesión → pedir autorización GL
-  // Guardamos el conteo ACTUAL (S.conteo) en pending para usarlo al guardar
-  if (S.session[key] !== undefined){
-    S.pending = {seb, cajas, pzas, key, conteo: S.conteo};
-    openGL();
-    return;
-  }
-  await saveCapture(seb, cajas, pzas, key, S.conteo);
+  const seb=S.seb;
+  const cajas=parseInt($('inp-cajas').value)||0;
+  const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
+  const key=`${seb}||${S.secA}||${S.secB}`;
+  if(S.isDup||S.session[key]!==undefined){ S.pending={seb,cajas,pzas,key,conteo:S.conteo}; openGL(); return; }
+  await saveCapture(seb,cajas,pzas,key,S.conteo);
 }
 
-async function saveCapture(seb, cajas, pzas, key, conteo){
-  $('btn-cap').disabled = true;
-  $('btn-cap').textContent = '⏳ Guardando...';
+/* ── SAVE — optimista: UI instantánea, red en background ─ */
+async function saveCapture(seb,cajas,pzas,key,conteo){
+  $('btn-cap').disabled=true; $('btn-cap').textContent='⏳ Guardando...';
   hideAlerts();
+  const usuario=S.user?`${S.user.e} - ${S.user.n}`:'Sin identificar';
 
-  const usuario = S.user ? `${S.user.e} - ${S.user.n}` : 'Sin identificar';
+  // Registrar en sesión ANTES de la llamada de red
+  S.session[key]=conteo; S.conteo=conteo; S.isDup=false;
+  const res=cajas>0||(cajas===0)?`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas parcial':''}`:pzas+' pzas';
 
-  // Intentar enviar con timeout corto (7s) — si falla, encolar
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 7000);
+  // UI optimista — habilitar "Siguiente captura" YA
+  showAlert('ok',`✅ ${seb}: ${res} — ${cLabel(conteo)} registrado`);
+  addHist(seb,cajas,pzas,conteo,false);
+  $('btn-cap').style.display='none';
+  $('btn-next').style.display='flex';
+  $('btn-rescan').style.display='none';
+  $('dup-card').classList.remove('show');
 
-  try {
-    const params = new URLSearchParams({
-      action:'save', sebango:seb, secA:S.secA, secB:S.secB,
-      cajas, parcialPzas:pzas, conteo, usuario
-    });
-    const r = await fetch(`${API}?${params}`, {redirect:'follow', signal: ctrl.signal});
-    clearTimeout(timer);
-    const d = await r.json();
-    if (d.success || d.ok){
-      S.session[key] = conteo;
-      S.conteo = conteo;
-      const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
-      showAlert('ok', `✅ ${seb}: ${resumen} — ${conteoLabel(conteo)} guardado`);
-      addHist(seb, cajas, pzas, conteo);
-      afterSaveOK();
-    } else throw new Error(d.message||'Error al guardar');
-  } catch(e){
-    clearTimeout(timer);
-    // ── GUARDAR EN COLA OFFLINE ──────────────────────────
-    // El registro se enviará cuando haya conexión.
-    // Para el usuario se ve como guardado (UX optimista).
-    S.session[key] = conteo;
-    S.conteo = conteo;
-    queueAdd({seb, cajas, pzas, conteo, usuario,
-               secA:S.secA, secB:S.secB});
-    const resumen = pzas > 0 ? `${cajas} cajas + ${pzas} pzas parcial` : `${cajas} cajas`;
-    showAlert('warn',
-      `📥 ${seb}: ${resumen} — ${conteoLabel(conteo)} guardado localmente (sin conexión)`);
-    addHist(seb, cajas, pzas, conteo, /*pending*/true);
-    afterSaveOK();
-    // Intentar vaciar cola en background
-    setTimeout(flushQueue, 2000);
+  // Envío en background
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),7000);
+  try{
+    const p=new URLSearchParams({action:'save',sebango:seb,secA:S.secA,secB:S.secB,cajas,parcialPzas:pzas,conteo,usuario});
+    const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:ctrl.signal}); clearTimeout(t);
+    const d=await r.json();
+    if(!(d.success||d.ok)) throw new Error(d.message||'Error servidor');
+  }catch(e){
+    clearTimeout(t);
+    // Encolar para reintento — no bloquear UI
+    qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
+    showAlert('warn',`📥 ${seb}: ${cLabel(conteo)} guardado localmente — se sincronizará con señal`);
   }
 }
 
-function afterSaveOK(){
-  $('btn-cap').style.display = 'none';
-  $('btn-next').style.display = 'flex';
-  $('btn-rescan').style.display = 'none';
-}
-
-function addHist(seb, cajas, pzas, conteo, pending=false){
-  const wrap = $('hist-wrap'), hist = $('hist');
-  wrap.style.display = 'block';
-  const d = document.createElement('div');
-  d.className = 'hist-item';
-  const det = pzas>0?`${cajas} cajas + ${pzas} pzas`:`${cajas} cajas`;
-  const icon = pending ? '📥 ' : '';
-  d.innerHTML = `<span>${icon}<strong>${seb}</strong> <small>#${conteo}</small></span><span>${det}</span>`;
-  hist.insertBefore(d, hist.firstChild);
-  if (hist.children.length > 6) hist.removeChild(hist.lastChild);
-  updateQueueBadge();
-}
-
-// Muestra cuántas capturas están pendientes de sincronizar
-function updateQueueBadge(){
-  let badge = $('queue-badge');
-  if (!badge){
-    badge = document.createElement('div');
-    badge.id = 'queue-badge';
-    badge.style.cssText = 'background:#e37400;color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;display:none;margin-right:4px';
-    $('hdr').insertBefore(badge, $('back-btn'));
-  }
-  if (_saveQueue.length > 0){
-    badge.textContent = `📥 ${_saveQueue.length} pend.`;
-    badge.style.display = 'block';
-  } else {
-    badge.style.display = 'none';
-  }
+function addHist(seb,cajas,pzas,conteo,pending){
+  const w=$('hist-wrap'),h=$('hist'); w.style.display='block';
+  const d=document.createElement('div'); d.className='hist-item';
+  const det=pzas>0?`${cajas} cajas + ${pzas} pzas`:`${cajas} cajas`;
+  d.innerHTML=`<span>${pending?'📥 ':''}<strong>${seb}</strong> <small>#${conteo}</small></span><span>${det}</span>`;
+  h.insertBefore(d,h.firstChild); if(h.children.length>8) h.removeChild(h.lastChild);
 }
 
 function nextCapture(){
-  $('btn-next').style.display = 'none';
-  $('btn-cap').style.display = 'flex';
-  $('btn-rescan').style.display = 'block';
-  $('btn-cap').disabled = false;
-  $('btn-cap').textContent = '💾 Capturar';
-  hideAlerts();
-  $('unlock-banner').classList.remove('show');
+  $('btn-next').style.display='none'; $('btn-cap').style.display='flex';
+  $('btn-rescan').style.display='block'; $('btn-cap').disabled=false;
+  $('btn-cap').textContent='💾 Capturar'; hideAlerts(); $('unlock-banner').classList.remove('show');
   rescan();
 }
-
 function rescan(){
-  S.scanning = false; S.lastRaw = null;
-  stopScanCam();
-  $('result-section').style.display = 'none';
-  $('scan-section').style.display = 'block';
-  $('btn-next').style.display = 'none';
-  $('btn-cap').style.display = 'flex';
-  $('btn-rescan').style.display = 'block';
-  hideAlerts();
-  activateCam();
+  S.scanning=false; S.lastRaw=null; S.isDup=false; stopScanCam();
+  $('result-section').style.display='none'; $('scan-section').style.display='block';
+  $('dup-card').classList.remove('show'); $('loc-chip').style.display='none';
+  $('btn-next').style.display='none'; $('btn-cap').style.display='flex';
+  $('btn-rescan').style.display='block'; hideAlerts(); activateCam();
 }
 
-// ══════════════════════════════════════════════════════════
-// GL MODAL
-// ══════════════════════════════════════════════════════════
+/* ── GL MODAL ────────────────────────────────────────── */
 function openGL(){
-  S.glAuthed = null;
-  const sel = $('gl-sel');
-  sel.innerHTML = '<option value="">— Selecciona GL —</option>';
-  GL.filter(g => g.a===S.secA || g.a==='PC').forEach(g=>{
-    sel.innerHTML += `<option value="${g.e}">${g.n} (#${g.e})</option>`;
-  });
-  $('gl-emp-inp').value = '';
-  $('gl-alert').classList.remove('show');
-  $('gl-ok').textContent = 'Autorizar';
-  $('gl-ok').style.background = 'var(--blue)';
-  $('gl-qr-status').textContent = '';
-  setGLMode('manual');
-  $('gl-modal').classList.add('show');
+  S.glAuthed=null;
+  const sel=$('gl-sel'); sel.innerHTML='<option value="">— Selecciona GL —</option>';
+  GL.filter(g=>g.a===S.secA||g.a==='PC').forEach(g=>{ sel.innerHTML+=`<option value="${g.e}">${g.n} (#${g.e})</option>`; });
+  $('gl-emp-inp').value=''; $('gl-alert').classList.remove('show');
+  $('gl-ok').textContent='Autorizar'; $('gl-ok').style.background='var(--blue)';
+  $('gl-qr-status').textContent='';
+  setGLMode('manual'); $('gl-modal').classList.add('show');
 }
-
-function closeGL(){
-  stopGLCam();
-  $('gl-modal').classList.remove('show');
-  S.pending = null; S.glAuthed = null;
-  $('btn-cap').disabled = false;
-  $('btn-cap').textContent = '💾 Capturar';
-}
-
+function closeGL(){ stopGLCam(); $('gl-modal').classList.remove('show'); S.pending=null; S.glAuthed=null; rescan(); }
 function setGLMode(m){
   $('glm-manual').className='cam-opt'+(m==='manual'?' on':'');
   $('glm-qr').className   ='cam-opt'+(m==='qr'    ?' on':'');
-  $('gl-manual').style.display = m==='manual'?'block':'none';
-  $('gl-qr').style.display     = m==='qr'    ?'block':'none';
-  if (m==='qr') startGLCam();
-  else stopGLCam();
+  $('gl-manual').style.display=m==='manual'?'block':'none';
+  $('gl-qr').style.display    =m==='qr'    ?'block':'none';
+  if(m==='qr') startGLCam(); else stopGLCam();
 }
-
 function setGLCam(m){
-  S.glCamMode = m;
+  S.glCamMode=m;
   $('gl-cam-env').className='cam-opt'+(m==='env'?' on':'');
   $('gl-cam-ir').className ='cam-opt'+(m==='ir' ?' on':'');
-  if (m==='ir'){
-    stopGLCam();
-    $('gl-vid').style.display='none';
-    $('gl-qr-status').textContent='🔴 Lector activo — presiona el gatillo';
-    setTimeout(()=>{ $('gl-ir-inp').value=''; $('gl-ir-inp').focus(); },50);
-    S.glScanning = true;
-  } else startGLCam();
+  if(m==='ir'){ stopGLCam(); $('gl-vid').style.display='none'; $('gl-qr-status').textContent='🔴 Lector activo — presiona el gatillo'; setTimeout(()=>{ $('gl-ir-inp').value=''; $('gl-ir-inp').focus(); },50); S.glScanning=true; }
+  else startGLCam();
 }
-
 async function startGLCam(){
-  if (S.glCamMode==='ir'){ setGLCam('ir'); return; }
-  stopGLCam();
-  S.glScanning = true;
-  $('gl-vid').style.display='block';
+  if(S.glCamMode==='ir'){ setGLCam('ir'); return; }
+  stopGLCam(); S.glScanning=true; $('gl-vid').style.display='block';
   $('gl-qr-status').innerHTML='<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial GL...</div>';
-  try {
-    S.glStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
-    const v = $('gl-vid'); v.srcObject=S.glStream; await v.play();
-    glScanLoop();
-  } catch(e){
-    $('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ ${e.message}</span>`;
-  }
+  try{ S.glStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}}); const v=$('gl-vid'); v.srcObject=S.glStream; await v.play(); glScanLoop(); }
+  catch(e){ $('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ ${e.message}</span>`; }
 }
-
 function glScanLoop(){
-  if (!S.glScanning||!S.glStream) return;
+  if(!S.glScanning||!S.glStream) return;
   const vid=$('gl-vid'),cvs=$('gl-canvas');
-  if (vid.readyState<2){requestAnimationFrame(glScanLoop);return;}
-  const sz=Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.6);
-  cvs.width=sz;cvs.height=sz;
+  if(vid.readyState<2){ requestAnimationFrame(glScanLoop); return; }
+  const sz=Math.min(Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.6),380);
+  cvs.width=sz; cvs.height=sz;
   const ctx=cvs.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
-  if (typeof jsQR!=='undefined'){
-    const code=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz);
-    if (code?.data){ const emp=extractEmp(code.data); if(emp){S.glScanning=false;validateGL(emp);return;} }
-  }
+  if(typeof jsQR!=='undefined'){ const c=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz); if(c?.data){ const emp=extractEmp(c.data); if(emp){ S.glScanning=false; validateGL(emp); return; } } }
   requestAnimationFrame(glScanLoop);
 }
-
 function stopGLCam(){
   S.glScanning=false;
-  if(S.glStream){S.glStream.getTracks().forEach(t=>t.stop());S.glStream=null;}
-  const v=$('gl-vid');if(v){v.srcObject=null;v.style.display='none';}
+  if(S.glStream){ S.glStream.getTracks().forEach(t=>t.stop()); S.glStream=null; }
+  const v=$('gl-vid'); if(v){ v.srcObject=null; v.style.display='none'; }
 }
-
-let _glIrBuf=null;
-function onGLBarcode(val){
-  clearTimeout(_glIrBuf);
-  _glIrBuf=setTimeout(()=>{
-    const raw=val.trim(); $('gl-ir-inp').value='';
-    setTimeout(()=>$('gl-ir-inp').focus(),50);
-    if(!raw) return;
-    const emp=extractEmp(raw);
-    if(emp) validateGL(emp);
-    else $('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
-  },150);
-}
-
+let _gib=null;
+function onGLBarcode(val){ clearTimeout(_gib); _gib=setTimeout(()=>{ const raw=val.trim(); $('gl-ir-inp').value=''; setTimeout(()=>$('gl-ir-inp').focus(),50); if(!raw) return; const emp=extractEmp(raw); if(emp) validateGL(emp); else $('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`; },150); }
 function validateGL(emp){
   stopGLCam();
   const gl=GL.find(g=>g.e===emp&&(g.a===S.secA||g.a==='PC'));
-  if(gl){
-    S.glAuthed=gl;
-    $('gl-qr-status').innerHTML=`<span style="color:var(--green)">✅ Autorizado: ${gl.n}</span>`;
-    $('gl-ok').style.background='var(--green)';
-    $('gl-ok').textContent='✅ Confirmar';
-    setTimeout(authorizeGL,800);
-  } else {
-    $('gl-qr-status').innerHTML=`<span style="color:var(--red)">❌ Empleado #${emp} no es GL autorizado para ${S.secA}</span>`;
-    S.glAuthed=null;
-  }
+  if(gl){ S.glAuthed=gl; $('gl-qr-status').innerHTML=`<span style="color:var(--green)">✅ ${gl.n}</span>`; $('gl-ok').style.background='var(--green)'; $('gl-ok').textContent='✅ Confirmar'; setTimeout(authorizeGL,700); }
+  else { $('gl-qr-status').innerHTML=`<span style="color:var(--red)">❌ #${emp} no es GL autorizado para ${S.secA}</span>`; S.glAuthed=null; }
 }
-
 function authorizeGL(){
-  const alertEl=$('gl-alert');
-
-  if (S.glAuthed){
-    stopGLCam();
-    $('gl-modal').classList.remove('show');
-    const pc=S.pending; if(!pc) return;
-    S.pending=null;
-    showUnlock(`🔓 Desbloqueado por ${S.glAuthed.n} — registrando ${conteoLabel(pc.conteo)} para ${pc.seb}`);
-    saveCapture(pc.seb, pc.cajas, pc.pzas, pc.key, pc.conteo);
-    S.glAuthed=null;
-    return;
+  const ae=$('gl-alert');
+  if(S.glAuthed){
+    stopGLCam(); $('gl-modal').classList.remove('show');
+    const pc=S.pending; if(!pc) return; S.pending=null;
+    showUnlock(`🔓 Autorizado por ${S.glAuthed.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
+    saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key,pc.conteo); S.glAuthed=null; return;
   }
-
-  const sel=parseInt($('gl-sel').value);
-  const emp=parseInt($('gl-emp-inp').value);
-  if(!sel||!emp){
-    alertEl.textContent='Selecciona un GL e ingresa su número de empleado.';
-    alertEl.classList.add('show'); return;
-  }
+  const sel=parseInt($('gl-sel').value); const emp=parseInt($('gl-emp-inp').value);
+  if(!sel||!emp){ ae.textContent='Selecciona un GL e ingresa su número de empleado.'; ae.classList.add('show'); return; }
   const gl=GL.find(g=>g.e===sel&&(g.a===S.secA||g.a==='PC'));
-  if(!gl||gl.e!==emp){
-    alertEl.textContent='Número de empleado incorrecto para ese GL.';
-    alertEl.classList.add('show'); return;
-  }
+  if(!gl||gl.e!==emp){ ae.textContent='Número de empleado incorrecto para ese GL.'; ae.classList.add('show'); return; }
   $('gl-modal').classList.remove('show');
-  const pc=S.pending; if(!pc) return;
-  S.pending=null;
-  showUnlock(`🔓 Desbloqueado por ${gl.n} — registrando ${conteoLabel(pc.conteo)} para ${pc.seb}`);
-  saveCapture(pc.seb, pc.cajas, pc.pzas, pc.key, pc.conteo);
+  const pc=S.pending; if(!pc) return; S.pending=null;
+  showUnlock(`🔓 Autorizado por ${gl.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
+  saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key,pc.conteo);
 }
 
-// ══════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════
+/* ── INIT ────────────────────────────────────────────── */
 (function init(){
-  // Cargar jsQR sin async para que esté listo inmediatamente
-  if (typeof jsQR === 'undefined'){
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
-    document.head.appendChild(s);
-  }
-  // Si hay capturas pendientes de sesiones anteriores, intentar enviarlas
-  if (_saveQueue.length){
-    updateQueueBadge();
-    setTimeout(flushQueue, 3000); // esperar 3s para que cargue el browser
-  }
+  if(typeof jsQR==='undefined'){ const s=document.createElement('script'); s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'; document.head.appendChild(s); }
+  if(_q.length){ badge(); setTimeout(flushQ,2500); }
 })();
 </script>
 </body>
