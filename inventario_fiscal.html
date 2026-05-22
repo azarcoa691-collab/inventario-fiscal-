@@ -111,7 +111,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .cam-opt.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d)}
 
 .scan-wrap{position:relative;border-radius:var(--r);overflow:hidden;background:#000;margin-bottom:0}
-/* Login: video más alto para aprovechar pantalla */
 #login-scanner-wrap .scan-wrap video{width:100%;display:block;height:clamp(180px,38vh,320px);object-fit:cover}
 .scan-wrap video{width:100%;display:block;max-height:clamp(180px,32vw,260px);object-fit:cover}
 .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
@@ -219,7 +218,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .total-box .tv{font-size:clamp(26px,6vw,34px);font-weight:800;color:var(--blue)}
 
 /* ══ ACTION BUTTONS ═══════════════════════════════════════ */
-/* Botón Capturar — MÁS GRANDE y prominente */
 .btn{width:100%;border:none;border-radius:var(--r);padding:clamp(14px,3.5vh,20px);font-size:var(--fs-l);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:transform .1s,box-shadow .1s}
 .btn:active{opacity:.85;transform:translateY(3px)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
@@ -227,8 +225,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .btn-blue:active{box-shadow:0 1px 0 #0a3d8a;transform:translateY(5px)}
 .btn-green{background:linear-gradient(180deg,#1e8e3e,#145a2b);color:#fff;box-shadow:0 5px 0 #0a3a1c,0 7px 14px rgba(0,0,0,.22)}
 .btn-green:active{box-shadow:0 1px 0 #0a3a1c;transform:translateY(4px)}
-/* Volver a escanear — más pequeño y discreto para evitar presión accidental */
 .btn-outline{background:var(--white);border:2px solid var(--border);color:var(--txt);box-shadow:var(--sh);font-size:var(--fs-s);padding:clamp(10px,2vh,13px)}
+
+/* Botón revisar faltantes */
+.btn-warn{background:var(--white);border:2px solid #f8d18a;color:#7a4a00;box-shadow:var(--sh);font-size:var(--fs-s);padding:clamp(10px,2vh,13px)}
 
 /* ══ ALERTS ═══════════════════════════════════════════════ */
 .alert{border-radius:var(--r);padding:12px 14px;margin-bottom:10px;font-size:var(--fs-s);font-weight:600;display:none;align-items:center;gap:10px;animation:slideIn .25s ease}
@@ -241,12 +241,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .unlock-banner{background:var(--orange-l);border:1.5px solid #f8d18a;border-radius:var(--r);padding:10px 14px;display:none;align-items:center;gap:8px;font-size:var(--fs-s);font-weight:600;color:#7a4a00;margin-bottom:10px}
 .unlock-banner.show{display:flex}
 
-/* BREADCRUMB */
 .bc{display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--txt);margin-bottom:10px;background:var(--white);border-radius:8px;padding:7px 12px;border:1px solid var(--border)}
 .bc .crumb{font-weight:700;color:var(--blue)}
 .bc-step{font-size:var(--fs-xs);color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
 
-/* HISTORY */
 .hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:var(--fs-s)}
 .hist-item:last-child{border:none}
 
@@ -268,6 +266,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .modal-btns{display:flex;gap:10px;margin-top:4px}
 .btn-cancel{flex:1;padding:14px;border:1.5px solid var(--border);background:var(--white);border-radius:10px;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:var(--txt)}
 .btn-ok{flex:2;padding:14px;border:none;background:linear-gradient(180deg,#1a73e8,#1254c0);border-radius:10px;font-size:var(--fs-m);font-weight:700;cursor:pointer;color:#fff;box-shadow:0 4px 0 #0a3d8a}
+
+/* MODAL PARA LLAMA ESPERA */
+.pl-modal{border-top: 8px solid var(--red); background: var(--red-l);}
+.pl-modal h2{font-size:24px; text-align:center;}
+.pl-modal .pl-msg-box{background:var(--white); border-radius:10px; padding:15px; text-align:center; margin-bottom:15px; font-size:var(--fs-m); border:1.5px solid #f5b7b5;}
+.pl-modal .pl-action{color:var(--red); font-weight:800; text-transform:uppercase; text-align:center; margin-bottom:10px; font-size:18px;}
 
 /* saving overlay */
 .saving-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:250;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
@@ -311,8 +315,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     </div>
 
     <div class="login-body">
-
-      <!-- Entrada manual -->
       <div class="emp-section">
         <div class="emp-label">Número de empleado</div>
         <div class="emp-inp-wrap">
@@ -326,7 +328,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
       <div class="divider"><span>o escanea tu credencial</span></div>
 
-      <!-- Scanner / Lector -->
       <div class="login-scan-section">
         <div class="cam-selector">
           <button class="cam-opt on" id="lc-env" onclick="setLoginCam('env')">📷 Cámara</button>
@@ -365,9 +366,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
         <div class="scan-status" id="login-scan-status"></div>
       </div>
-
-    </div><!-- /login-body -->
-  </div><!-- /screen-login -->
+    </div>
+  </div>
 
   <!-- ══ SECTION A ═══════════════════════════════════════ -->
   <div class="screen btn-screen" id="screen-a">
@@ -427,16 +427,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
           autocomplete="off" oninput="onScanBarcode(this.value)">
       </div>
       <button class="btn btn-blue" id="cam-btn" onclick="activateCam()">📷 Activar cámara</button>
+      
       <div class="scan-status" id="scan-status">
         <div class="pulse-wrap"><div class="dot"></div>Listo para escanear</div>
       </div>
+      
+      <!-- NUEVO: Botón para revisar faltantes antes de escanear -->
+      <button class="btn btn-warn" id="btn-faltantes" onclick="verificarFaltantes()" style="margin-top: 10px;">📋 Ver Sebangos Faltantes de la Sección</button>
     </div>
 
     <!-- RESULT -->
     <div id="result-section" style="display:none">
       <div class="bc" id="bc"></div>
 
-      <!-- Aviso duplicado — se muestra AL ESCANEAR -->
       <div class="dup-card" id="dup-card">
         <h4>🔒 Sebango ya registrado</h4>
         <p id="dup-msg">Este sebango ya fue capturado en esta ubicación.</p>
@@ -486,10 +489,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
         </div>
       </div>
 
-      <!-- CAPTURAR — prominente y grande -->
       <button class="btn btn-blue" id="btn-cap" onclick="doCapture()">💾 Capturar</button>
       <button class="btn btn-green" id="btn-next" style="display:none" onclick="nextCapture()">➕ Siguiente captura</button>
-      <!-- Volver a escanear — más pequeño para evitar pulsación accidental -->
       <button class="btn btn-outline" id="btn-rescan" onclick="rescan()">🔄 Volver a escanear</button>
 
       <div id="hist-wrap" style="display:none;margin-top:8px">
@@ -500,7 +501,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   </div>
 </div>
 
-<!-- GL MODAL — bottom sheet -->
+<!-- GL MODAL -->
 <div class="modal-bg" id="gl-modal">
   <div class="modal">
     <h2>🔒 Autorización GL requerida</h2>
@@ -542,45 +543,22 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   </div>
 </div>
 
+<!-- NUEVO MODAL: PARA, LLAMA Y ESPERA -->
+<div class="modal-bg" id="pl-modal">
+  <div class="modal pl-modal">
+    <h2>⛔ PARA, LLAMA Y ESPERA</h2>
+    <div class="pl-action">¡NOTIFICAR A GL!</div>
+    <div class="pl-msg-box">
+      El sebango <strong id="pl-sebango" style="color:var(--red); font-size:20px;">—</strong><br>
+      NO pertenece a la ubicación <b id="pl-ubicacion">—</b>.<br>
+      <small style="display:block; margin-top:8px;">Puede ser material nuevo o estar fuera de la base de datos.</small>
+    </div>
+    <button class="btn" style="background:var(--red); color:#fff;" onclick="cerrarPLModal()">Entendido (Volver a escanear)</button>
+  </div>
+</div>
+
 <script>
 'use strict';
-/*
-═══════════════════════════════════════════════════════════
-  PASO A PASO — ACTUALIZAR URL DEL SCRIPT DE GOOGLE SHEETS
-═══════════════════════════════════════════════════════════
-  Cuando cambia el script de Apps Script, sigue estos pasos:
-
-  1. Abre el Apps Script en Google Sheets:
-     Extensiones → Apps Script
-
-  2. En el editor, haz clic en "Implementar" → "Nueva implementación"
-     (o "Administrar implementaciones" para editar la existente)
-
-  3. Tipo: "Aplicación web"
-     · Ejecutar como: "Yo (tu cuenta)"
-     · Quién tiene acceso: "Cualquier usuario" (o "Cualquier usuario, incluso anónimos")
-
-  4. Haz clic en "Implementar" y copia la URL que aparece.
-     Tiene el formato:
-     https://script.google.com/macros/s/XXXXXX.../exec
-
-  5. En este archivo HTML, busca la línea:
-       const API = '...';
-     (aproximadamente línea 5 del bloque <script>)
-     y pega la nueva URL entre las comillas simples.
-
-  6. Guarda el archivo HTML y vuelve a subirlo a tu hosting
-     (GitHub Pages, servidor interno, etc.)
-
-  7. En los dispositivos, recarga la página con Ctrl+Shift+R
-     (o borra la caché del navegador) para que tome la nueva URL.
-
-  NOTA: La caché de sebangs (localStorage) no se borra al
-  actualizar la URL. Si cambiaron los QPC o ubicaciones en el
-  catálogo, limpia la caché desde:
-  Ajustes del navegador → Privacidad → Datos del sitio → borrar.
-═══════════════════════════════════════════════════════════
-*/
 
 const API='https://script.google.com/macros/s/AKfycbzV8QS_0MoziKQNWYbvJx9B5phRFEBxqzejlNNjAjX8-AreoNrpE-nE12v9hUxR2Rpf/exec';
 
@@ -617,14 +595,12 @@ const SECB={
              'F3A','F3B','F3C','F3D','F5B','CONVEYORS','RECIBO','CSP']
 };
 
-/* ══ CACHÉ LOCAL ════════════════════════════════════════ */
 const CK='inv_seb_v4';
 let _cache={};
 try{_cache=JSON.parse(localStorage.getItem(CK)||'{}');}catch(e){}
 const cacheGet=s=>_cache[s]||null;
 const cachePut=(s,d)=>{_cache[s]=d;try{localStorage.setItem(CK,JSON.stringify(_cache));}catch(e){}};
 
-/* ══ COLA OFFLINE ═══════════════════════════════════════ */
 const QK='inv_q_v4';
 let _q=[];
 try{_q=JSON.parse(localStorage.getItem(QK)||'[]');}catch(e){}
@@ -641,7 +617,7 @@ async function flushQ(){
       cajas:it.cajas,parcialPzas:it.pzas,conteo:it.conteo,usuario:it.usuario});
     const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:c.signal});
     const d=await r.json();
-    if(d.success||d.ok){qDel(it.ts);if(_q.length)setTimeout(flushQ,800);else showAlert('ok','✅ Capturas pendientes sincronizadas con Google Sheets');}
+    if(d.success||d.ok){qDel(it.ts);if(_q.length)setTimeout(flushQ,800);else showAlert('ok','✅ Capturas pendientes sincronizadas');}
   }catch(e){}
 }
 window.addEventListener('online',()=>{if(_q.length){setTimeout(flushQ,1000);}});
@@ -655,45 +631,36 @@ function badge(){
   if(_q.length)b.textContent=`📥 ${_q.length}`;
 }
 
-/* ══ STATE ══════════════════════════════════════════════ */
 const S={
   screen:'login',user:null,
   secA:null,secB:null,
   seb:null,qpc:0,ub:null,conteo:1,
   partial:false,session:{},pending:null,
   isDup:false,
+  sectionCatalog: [], // NUEVO: Guarda los sebangos permitidos en la ubicación actual
   stream:null,camActive:false,scanMode:'env',scanning:false,lastRaw:null,
   loginStream:null,loginScanning:false,loginMode:'env',
   glStream:null,glScanning:false,glCamMode:'env',glAuthed:null,
   _irFocus:null,_scanT:null,
 };
 
-/* ══ UTILS ══════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
 function showScreen(n){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));const e=$('screen-'+n);if(e)e.classList.add('active');S.screen=n;}
 function setHdrSub(t){$('hdr-sub').textContent=t;}
 function hideAlerts(){['ok','err','warn'].forEach(t=>$('alert-'+t).classList.remove('show'));$('unlock-banner').classList.remove('show');}
-function showAlert(type,msg,persist){hideAlerts();$('alert-'+type+'-t').textContent=msg;$('alert-'+type).classList.add('show');if(!persist)setTimeout(()=>$('alert-'+type).classList.remove('show'),5500);}
+function showAlert(type,msg,persist){hideAlerts();$('alert-'+type+'-t').textContent=msg;$('alert-'+type).classList.add('show');if(!persist)setTimeout(()=>$('alert-'+type).classList.remove('show'),7000);}
 function showUnlock(msg){$('unlock-txt').textContent=msg;$('unlock-banner').classList.add('show');}
 function setSaving(show,txt='Guardando en Google Sheets...'){
   $('saving-overlay').classList.toggle('show',show);
   $('saving-txt').textContent=txt;
 }
 
-/* ══ REGEX SEBANGO — todos los prefijos solicitados ══════
-   Prefijos válidos: K T A H X B C XN XB (y sus variantes)
-   Formato: 1 o 2 letras + 3 dígitos = 4 o 5 caracteres total
-   Ejemplos: K577 | XN123 | XB456 | A789 | H001 | T320 | B100 | C205
-   ════════════════════════════════════════════════════════ */
 function extractSeb(raw){
   const s=raw.toUpperCase().replace(/\s/g,'');
-  // Prefijos de 2 letras primero (XN, XB) — 2L+3D = 5 chars
   let m=s.match(/(?<![A-Z])(X[NB]\d{3})(?![A-Z\d])/);
   if(m) return m[1];
-  // Cualquier prefijo de 1 letra (K,T,A,H,X,B,C) + 3 dígitos = 4 chars
   m=s.match(/(?<![A-Z])([KTAHXBC]\d{3})(?![A-Z\d])/);
   if(m) return m[1];
-  // Fallback permisivo — letra+3dígitos sin importar contexto
   m=s.match(/([KTAHXBC]\d{3})/);
   if(m) return m[1];
   m=s.match(/(X[NB]\d{3})/);
@@ -704,7 +671,6 @@ function extractSeb(raw){
 function extractEmp(raw){const m=raw.match(/\b(1\d{4})\b/);return m?parseInt(m[1]):null;}
 function cLabel(n){return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo';}
 
-/* ══ NAV ════════════════════════════════════════════════ */
 function goBack(){
   if(S.screen==='scan'){stopScanCam();setHdrSub(S.secA);showScreen('b');}
   else if(S.screen==='b'){setHdrSub('Selecciona el área');S.secA=null;showScreen('a');}
@@ -715,7 +681,6 @@ function goBack(){
   }
 }
 
-/* ══ LOGIN ══════════════════════════════════════════════ */
 function resetLoginUI(){
   stopLoginCam();
   $('login-scanner-wrap').style.display='none';
@@ -731,16 +696,15 @@ function resetLoginUI(){
 function onManualEmpInput(v){$('emp-manual-inp').value=v.replace(/\D/g,'').slice(0,5);}
 function submitManualEmp(){
   const v=$('emp-manual-inp').value.trim();
-  const emp=extractEmp(v.length===5?v:'0'+v);// intenta con y sin 0 extra
+  const emp=extractEmp(v.length===5?v:'0'+v);
   const emp2=v.length===5&&/^1\d{4}$/.test(v)?parseInt(v):null;
   const e=emp2||emp;
   if(e)loginSuccess(e);
-  else $('login-status').innerHTML=`⚠️ Número inválido — debe ser 1XXXX (5 dígitos que inician con 1)`;
+  else $('login-status').innerHTML=`⚠️ Número inválido — debe ser 1XXXX`;
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
   $('emp-manual-inp').addEventListener('keydown',e=>{if(e.key==='Enter')submitManualEmp();});
-  // Mantener foco en input IR de login cuando está activo
   document.addEventListener('click',e=>{
     if(S.loginMode==='ir'&&S.loginScanning&&e.target.id!=='login-ir-inp')
       setTimeout(()=>$('login-ir-inp').focus(),80);
@@ -762,7 +726,6 @@ async function startLoginScan(){
     $('login-scanner-wrap').style.display='none';
     $('login-ir-wrap').style.display='block';
     S.loginScanning=true;
-    // Foco inmediato y cada 800ms para mantenerlo en el input
     setTimeout(()=>{$('login-ir-inp').value='';$('login-ir-inp').focus();},50);
     clearInterval(S._loginIrFocus);
     S._loginIrFocus=setInterval(()=>{
@@ -785,7 +748,7 @@ async function startLoginScan(){
   }catch(e){
     $('login-btn').style.display='flex';
     $('login-btn').textContent='📷 Reintentar';
-    $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ ${e.name==='NotAllowedError'?'Permiso denegado — actívalo en ajustes':e.message}</span>`;
+    $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ Permiso denegado</span>`;
   }
 }
 
@@ -820,7 +783,7 @@ function onLoginBarcode(val){
     if(!raw)return;
     const emp=extractEmp(raw);
     if(emp)loginSuccess(emp);
-    else $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado (1XXXX)</span>`;
+    else $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
   },120);
 }
 
@@ -837,7 +800,6 @@ function loginSuccess(emp){
   showScreen('a');
 }
 
-/* ══ SECTION A / B ══════════════════════════════════════ */
 function selectA(area){
   S.secA=area;setHdrSub(area);
   $('secb-title').textContent=`${area} — Ubicación`;
@@ -853,12 +815,51 @@ function selectA(area){
   showScreen('b');$('back-btn').style.display='block';
 }
 
-function selectB(sec){
-  S.secB=sec;setHdrSub(S.secA+' › '+sec);
-  resetScanScreen();showScreen('scan');activateCam();
+// NUEVO FLUJO: Cargar la lista completa de la sección antes de dejar escanear
+async function selectB(sec){
+  S.secB=sec; setHdrSub(S.secA+' › '+sec);
+  
+  // Descargar catálogo de esta sección
+  setSaving(true, 'Descargando sebangos de ubicación...');
+  try {
+    const url = `${API}?action=loadSection&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(sec)}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    S.sectionCatalog = data.sebangos || [];
+    setSaving(false);
+    resetScanScreen(); showScreen('scan'); activateCam();
+  } catch(e) {
+    setSaving(false);
+    // Si no hay red, permitimos entrar con el catálogo vacío y mostrar alerta
+    S.sectionCatalog = [];
+    showAlert('warn', 'Modo Offline: No se pudo descargar el catálogo de esta sección. No se bloquearán capturas.', true);
+    resetScanScreen(); showScreen('scan'); activateCam();
+  }
 }
 
-/* ══ SCAN CAMERA ════════════════════════════════════════ */
+// NUEVO FLUJO: Botón para revisar faltantes (Req. 2)
+function verificarFaltantes() {
+  if (!S.sectionCatalog || S.sectionCatalog.length === 0) {
+    showAlert('warn', 'No se descargó el catálogo de esta ubicación (trabajando offline).');
+    return;
+  }
+  
+  const claveUbicacion = `||${S.secA}||${S.secB}`;
+  const capturados = Object.keys(S.session)
+    .filter(k => k.includes(claveUbicacion))
+    .map(k => k.split('||')[0]);
+    
+  const faltan = S.sectionCatalog
+    .filter(item => !capturados.includes(item.sebango))
+    .map(item => item.sebango);
+    
+  if (faltan.length === 0) {
+    showAlert('ok', '✅ ¡Excelente! No faltan sebangos por capturar en esta ubicación.', true);
+  } else {
+    showAlert('warn', `⚠️ Faltan ${faltan.length} sebangos en esta sección:\n${faltan.join(', ')}`, true);
+  }
+}
+
 function resetScanScreen(){
   S.seb=null;S.qpc=0;S.ub=null;S.scanning=false;S.lastRaw=null;S.isDup=false;
   hideAlerts();
@@ -910,11 +911,10 @@ async function activateCam(){
     scanLoop();
   }catch(e){
     S.camActive=false;$('cam-btn').style.display='flex';$('cam-btn').textContent='📷 Reintentar';
-    setScanStatus(e.name==='NotAllowedError'?'🔒 Permiso denegado':e.name==='NotFoundError'?'📵 Cámara no encontrada':'⚠️ Error de cámara','err');
+    setScanStatus('⚠️ Error de cámara','err');
   }
 }
 
-/* scan loop con OffscreenCanvas */
 const SCAN_MAX=400;let _offCtx=null;
 function getScanCtx(sz){
   if(typeof OffscreenCanvas!=='undefined'){
@@ -958,21 +958,26 @@ function onScanBarcode(val){
     if(!raw)return;
     const seb=extractSeb(raw);
     if(seb)onSebango(seb);
-    else setScanStatus('⚠️ No se reconoció sebango — verifica el formato (ej: K577, XN123)','err');
+    else setScanStatus('⚠️ No se reconoció sebango — verifica formato','err');
   },100);
 }
 
-/* ══ SEBANGO DETECTADO — LOOKUP + MODAL GL INMEDIATO ════
-   FLUJO CORREGIDO:
-   1. Se escanea el sebango
-   2. Se hace lookup (caché o API)
-   3. SI ES DUPLICADO → modal GL se abre INMEDIATAMENTE
-      sin esperar a que el usuario presione Capturar
-   4. Si GL autoriza → se muestra la pantalla de captura
-   5. Si GL cancela → se vuelve a escanear
-   ════════════════════════════════════════════════════════ */
+// NUEVO FLUJO: Validación estricta PARA, LLAMA Y ESPERA (Req. 1 y 3)
 async function onSebango(seb){
   stopScanCam();
+  
+  // Si el catálogo se cargó exitosamente, verificar que el sebango pertenezca a la ubicación
+  if (S.sectionCatalog && S.sectionCatalog.length > 0) {
+    const isAllowed = S.sectionCatalog.find(item => item.sebango === seb);
+    if (!isAllowed) {
+      // Bloquear flujo y mostrar alerta "Para Llama y Espera"
+      $('pl-sebango').textContent = seb;
+      $('pl-ubicacion').textContent = S.secB;
+      $('pl-modal').classList.add('show');
+      return; 
+    }
+  }
+
   $('scan-section').style.display='none';
   $('result-section').style.display='block';
   hideAlerts();
@@ -984,12 +989,10 @@ async function onSebango(seb){
   const key=`${seb}||${S.secA}||${S.secB}`;
   S.isDup=(S.session[key]!==undefined);
 
-  // Lookup
   const cached=cacheGet(seb);
   if(cached){
     applyLookup(seb,key,cached,true);
     fetchBg(seb,key);
-    // Si es duplicado → abrir GL modal inmediatamente tras mostrar datos
     if(S.isDup){
       S.pending={seb,cajas:0,pzas:0,key,conteo:S.conteo};
       setTimeout(()=>openGL(),250);
@@ -997,7 +1000,6 @@ async function onSebango(seb){
     return;
   }
 
-  // Sin caché: mostrar skeleton y esperar API
   $('res-ub').textContent='...';$('res-qpc').textContent='...';$('res-conteo').textContent='...';
   $('btn-cap').disabled=true;
 
@@ -1009,7 +1011,6 @@ async function onSebango(seb){
     if(d.found){
       cachePut(seb,d);
       applyLookup(seb,key,d,false);
-      // Si es duplicado → GL modal inmediatamente
       if(S.isDup){
         S.pending={seb,cajas:0,pzas:0,key,conteo:S.conteo};
         setTimeout(()=>openGL(),250);
@@ -1020,7 +1021,6 @@ async function onSebango(seb){
     }
   }catch(e){
     clearTimeout(t);
-    // Offline fallback
     S.seb=seb;S.qpc=0;S.ub=seb;
     S.conteo=S.isDup?Math.min(S.session[key]+1,3):1;
     $('res-ub').textContent='— sin conexión';$('res-qpc').textContent='?';
@@ -1037,10 +1037,15 @@ async function onSebango(seb){
   }
 }
 
+// Función para cerrar modal "Para, Llama y Espera"
+function cerrarPLModal() {
+  $('pl-modal').classList.remove('show');
+  rescan();
+}
+
 function applyLookup(seb,key,d,fromCache){
   S.seb=seb;S.qpc=+d.qpc||0;S.ub=d.ubicacion||seb;
 
-  // Validación cruzada de ubicación
   const sheetUb=(d.ubicacion||'').toUpperCase().replace(/\s/g,'');
   const selB=(S.secB||'').toUpperCase().replace(/\s/g,'');
   const match=!sheetUb||sheetUb===selB||sheetUb.includes(selB)||selB.includes(sheetUb);
@@ -1073,7 +1078,6 @@ async function fetchBg(seb,key){
   }catch(e){}
 }
 
-/* ══ INPUTS ══════════════════════════════════════════════ */
 function setupInputs(){
   $('inp-cajas').value=0;$('inp-parcial').value=0;S.partial=false;
   $('tog').classList.remove('on');$('partial-inp-row').style.display='none';
@@ -1084,9 +1088,7 @@ function adj(f,d){const id=f==='cajas'?'inp-cajas':'inp-parcial';const el=$(id);
 function togglePartial(){S.partial=!S.partial;$('tog').classList.toggle('on',S.partial);$('partial-inp-row').style.display=S.partial?'flex':'none';if(!S.partial)$('inp-parcial').value=0;calcTotal();}
 function calcTotal(){const c=parseInt($('inp-cajas').value)||0;let t=c*S.qpc;if(S.partial&&S.secA!=='LOGISTICA')t+=S.qpc>=30?Math.floor(S.qpc/2):(parseInt($('inp-parcial').value)||0);$('total-pzas').textContent=t;}
 
-/* ══ CAPTURE ════════════════════════════════════════════ */
 async function doCapture(){
-  // Si es duplicado y el modal no se abrió (edge case), abrirlo ahora
   const key=`${S.seb}||${S.secA}||${S.secB}`;
   if(S.isDup||S.session[key]!==undefined){
     const cajas=parseInt($('inp-cajas').value)||0;
@@ -1099,10 +1101,6 @@ async function doCapture(){
   await saveCapture(S.seb,cajas,pzas,key,S.conteo);
 }
 
-/* ══ SAVE — síncrono con overlay ════════════════════════
-   Se espera confirmación del servidor antes de avanzar.
-   Si falla → encola para reintento automático.
-   ════════════════════════════════════════════════════════ */
 async function saveCapture(seb,cajas,pzas,key,conteo){
   $('btn-cap').disabled=true;
   setSaving(true,'Guardando en Google Sheets...');
@@ -1118,7 +1116,6 @@ async function saveCapture(seb,cajas,pzas,key,conteo){
     clearTimeout(t);
     const d=await r.json();
     if(d.success||d.ok){
-      // Guardado confirmado por el servidor
       S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
       setSaving(false);
       const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
@@ -1135,7 +1132,6 @@ async function saveCapture(seb,cajas,pzas,key,conteo){
     clearTimeout(t);
     setSaving(false);
     if(e.name==='AbortError'||!navigator.onLine){
-      // Sin red → encolar y mostrar como guardado local
       S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
       qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
       const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
@@ -1146,7 +1142,6 @@ async function saveCapture(seb,cajas,pzas,key,conteo){
       $('btn-rescan').style.display='none';
       $('dup-card').classList.remove('show');
     }else{
-      // Error del servidor — no avanzar, mostrar error
       showAlert('err',`❌ Error al guardar: ${e.message}. Verifica tu conexión e intenta de nuevo.`);
       $('btn-cap').disabled=false;
     }
@@ -1176,7 +1171,6 @@ function rescan(){
   $('btn-rescan').style.display='block';hideAlerts();activateCam();
 }
 
-/* ══ GL MODAL ═══════════════════════════════════════════ */
 function openGL(){
   S.glAuthed=null;
   const seb=S.pending?.seb||S.seb||'';
@@ -1189,7 +1183,6 @@ function openGL(){
   $('gl-ok').textContent='Autorizar';$('gl-ok').style.background='var(--blue)';
   $('gl-qr-status').textContent='';
   $('gl-msg').textContent=`${seb} ya fue registrado en ${S.secA} › ${S.secB}. Un GL debe autorizar para continuar.`;
-  // Mostrar aviso en pantalla de resultado también
   if(seb){
     $('dup-msg').textContent=`${seb} ya fue capturado aquí. GL requerido.`;
     $('dup-card').classList.add('show');
@@ -1200,7 +1193,6 @@ function openGL(){
 function closeGL(){
   stopGLCam();$('gl-modal').classList.remove('show');
   S.pending=null;S.glAuthed=null;
-  // Al cancelar → volver a escanear (no dejar datos a medias)
   rescan();
 }
 
@@ -1287,7 +1279,6 @@ function authorizeGL(){
   if(S.glAuthed){
     stopGLCam();$('gl-modal').classList.remove('show');
     const pc=S.pending;if(!pc)return;S.pending=null;
-    // Actualizar cajas/pzas desde los inputs actuales (usuario puede haber cambiado valores)
     const cajas=parseInt($('inp-cajas').value)||0;
     const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
     showUnlock(`🔓 Autorizado por ${S.glAuthed.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
@@ -1305,7 +1296,6 @@ function authorizeGL(){
   saveCapture(pc.seb,cajas,pzas,pc.key,pc.conteo);
 }
 
-/* ══ INIT ═══════════════════════════════════════════════ */
 (function init(){
   if(typeof jsQR==='undefined'){
     const s=document.createElement('script');
