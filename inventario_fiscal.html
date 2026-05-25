@@ -646,15 +646,17 @@ function setSaving(show,txt='Guardando en Google Sheets...'){
 
 // FUNCIÓN DE EXTRACCIÓN DE SEBANGO CON EXCLUSIÓN DE NÚMEROS DE PARTE
 function extractSeb(raw){
-  const s = raw.toUpperCase().replace(/\s/g, '');
+  // IMPORTANTE: Ya no borramos todos los espacios. Solo pasamos a mayúsculas.
+  // Esto permite que el sistema diferencie las palabras separadas del código QR.
+  const s = raw.toUpperCase();
   
-  // Expresión para buscar exactamente 4 caracteres:
-  // - Prefijos XN o XB seguidos de 2 números (ej. XN12, XB54)
-  // - Prefijos X, A, B, H, C, T o K seguidos de 3 números (ej. A015, K042)
-  // El control (?<![A-Z]) asegura que si la letra viene precedida por otra letra (como 'AK010'), sea IGNORADA.
-  let m = s.match(/(?<![A-Z])(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?![A-Z\d])/);
+  // Expresión para buscar exactamente 4 caracteres aislados entre espacios:
+  // (?:^|\s) -> Verifica que antes del Sebango haya un espacio o sea el inicio del texto
+  // (XN\d{2}|XB\d{2}|[XABHCTK]\d{3}) -> Tus reglas de 4 caracteres
+  // (?=\s|$) -> Verifica que después del Sebango haya un espacio o el final del texto
+  let m = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
+  
   if(m) return m[1];
-
   return null;
 }
 
