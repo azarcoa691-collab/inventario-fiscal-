@@ -644,19 +644,27 @@ function setSaving(show,txt='Guardando en Google Sheets...'){
   $('saving-txt').textContent=txt;
 }
 
-// FUNCIÓN DE EXTRACCIÓN DE SEBANGO CON EXCLUSIÓN DE NÚMEROS DE PARTE
+// NUEVA FUNCIÓN DE EXTRACCIÓN CON SOPORTE PARA SEBANGOS PEGADOS A LA CANTIDAD
 function extractSeb(raw){
-  // IMPORTANTE: Ya no borramos todos los espacios. Solo pasamos a mayúsculas.
-  // Esto permite que el sistema diferencie las palabras separadas del código QR.
   const s = raw.toUpperCase();
   
-  // Expresión para buscar exactamente 4 caracteres aislados entre espacios:
-  // (?:^|\s) -> Verifica que antes del Sebango haya un espacio o sea el inicio del texto
-  // (XN\d{2}|XB\d{2}|[XABHCTK]\d{3}) -> Tus reglas de 4 caracteres
-  // (?=\s|$) -> Verifica que después del Sebango haya un espacio o el final del texto
-  let m = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
-  
-  if(m) return m[1];
+  // 1. Búsqueda principal: Sebango aislado (ej. " K711 ", " XN12 ")
+  let m1 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
+  if(m1) return m1[1];
+
+  // 2. Búsqueda secundaria: Sebango pegado a la cantidad (ej. "K51500360")
+  // Busca un bloque de exactamente 9 caracteres (4 de sebango + 5 de cantidad)
+  let m2 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})\d{5}(?=\s|$)/g);
+  if(m2){
+    for(let match of m2){
+      let clean = match.trim();
+      // Evitar falsos positivos con códigos de fecha que empiezan con K y el año (ej. K20260521)
+      if(clean.startsWith('K202') || clean.startsWith('K203')) continue;
+      // Extraemos solo los primeros 4 caracteres (el Sebango)
+      return clean.substring(0, 4);
+    }
+  }
+
   return null;
 }
 
