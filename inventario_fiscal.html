@@ -653,14 +653,12 @@ function extractSeb(raw){
   if(m1) return m1[1];
 
   // 2. Búsqueda secundaria: Sebango pegado a la cantidad (ej. "K51500360")
-  // Busca un bloque de exactamente 9 caracteres (4 de sebango + 5 de cantidad)
   let m2 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})\d{5}(?=\s|$)/g);
   if(m2){
     for(let match of m2){
       let clean = match.trim();
-      // Evitar falsos positivos con códigos de fecha que empiezan con K y el año (ej. K20260521)
+      // Evitar falsos positivos con fechas que empiezan con K y el año (ej. K20260521)
       if(clean.startsWith('K202') || clean.startsWith('K203')) continue;
-      // Extraemos solo los primeros 4 caracteres (el Sebango)
       return clean.substring(0, 4);
     }
   }
@@ -992,9 +990,10 @@ async function onSebango(seb){
   if(cached){
     applyLookup(seb,key,cached,true);
     fetchBg(seb,key);
+    // [CORRECCIÓN]: Ya no se abre el GL de inmediato. Solo se muestra la alerta para que puedas teclear la cantidad.
     if(S.isDup){
-      S.pending={seb,cajas:0,pzas:0,key,conteo:S.conteo};
-      setTimeout(()=>openGL(),250);
+      $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+      $('dup-card').classList.add('show');
     }
     return;
   }
@@ -1010,9 +1009,10 @@ async function onSebango(seb){
     if(d.found){
       cachePut(seb,d);
       applyLookup(seb,key,d,false);
+      // [CORRECCIÓN]: Igual aquí, solo muestra el aviso visual.
       if(S.isDup){
-        S.pending={seb,cajas:0,pzas:0,key,conteo:S.conteo};
-        setTimeout(()=>openGL(),250);
+        $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+        $('dup-card').classList.add('show');
       }
     }else{
       showAlert('err',`Sebango ${seb} no encontrado en la base de datos`);
@@ -1026,10 +1026,11 @@ async function onSebango(seb){
     $('res-meta').textContent=`${S.secA} › ${S.secB}`;
     $('res-conteo').textContent=cLabel(S.conteo);
     setupInputs();$('btn-cap').disabled=false;
+    // [CORRECCIÓN]: Offline duplicado
     if(S.isDup){
-      S.pending={seb,cajas:0,pzas:0,key,conteo:S.conteo};
-      showAlert('warn','⚠️ Sin conexión y sebango duplicado — se requiere GL para continuar');
-      setTimeout(()=>openGL(),400);
+      $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+      $('dup-card').classList.add('show');
+      showAlert('warn','⚠️ Sin conexión y sebango duplicado — se requiere GL al capturar');
     }else{
       showAlert('warn',e.name==='AbortError'?'⚠️ Sin respuesta — modo offline':'⚠️ Sin conexión — captura offline');
     }
@@ -1088,12 +1089,17 @@ function calcTotal(){const c=parseInt($('inp-cajas').value)||0;let t=c*S.qpc;if(
 
 async function doCapture(){
   const key=`${S.seb}||${S.secA}||${S.secB}`;
+  
+  // Al presionar el botón "Capturar", verificamos si necesita GL.
+  // Aquí es donde congelamos la cantidad exacta que acabas de escribir.
   if(S.isDup||S.session[key]!==undefined){
     const cajas=parseInt($('inp-cajas').value)||0;
     const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
     S.pending={seb:S.seb,cajas,pzas,key,conteo:S.conteo};
-    openGL();return;
+    openGL(); // Abre el modal de autorización.
+    return;
   }
+  
   const cajas=parseInt($('inp-cajas').value)||0;
   const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
   await saveCapture(S.seb,cajas,pzas,key,S.conteo);
@@ -1170,138 +1176,4 @@ function rescan(){
 }
 
 function openGL(){
-  S.glAuthed=null;
-  const seb=S.pending?.seb||S.seb||'';
-  const sel=$('gl-sel');sel.innerHTML='<option value="">— Selecciona GL —</option>';
-  GL.filter(g=>g.a===S.secA||g.a==='PC').forEach(g=>{
-    sel.innerHTML+=`<option value="${g.e}">${g.n} (#${g.e})</option>`;
-  });
-  $('gl-emp-inp').value='';
-  $('gl-alert').classList.remove('show');
-  $('gl-ok').textContent='Autorizar';$('gl-ok').style.background='var(--blue)';
-  $('gl-qr-status').textContent='';
-  $('gl-msg').textContent=`${seb} ya fue registrado en ${S.secA} › ${S.secB}. Un GL debe autorizar para continuar.`;
-  if(seb){
-    $('dup-msg').textContent=`${seb} ya fue capturado aquí. GL requerido.`;
-    $('dup-card').classList.add('show');
-  }
-  setGLMode('manual');$('gl-modal').classList.add('show');
-}
-
-function closeGL(){
-  stopGLCam();$('gl-modal').classList.remove('show');
-  S.pending=null;S.glAuthed=null;
-  rescan();
-}
-
-function setGLMode(m){
-  $('glm-manual').className='cam-opt'+(m==='manual'?' on':'');
-  $('glm-qr').className   ='cam-opt'+(m==='qr'    ?' on':'');
-  $('gl-manual').style.display=m==='manual'?'block':'none';
-  $('gl-qr').style.display    =m==='qr'    ?'block':'none';
-  if(m==='qr')startGLCam();else stopGLCam();
-}
-
-function setGLCam(m){
-  S.glCamMode=m;
-  $('gl-cam-env').className='cam-opt'+(m==='env'?' on':'');
-  $('gl-cam-ir').className ='cam-opt'+(m==='ir' ?' on':'');
-  if(m==='ir'){
-    stopGLCam();$('gl-vid').style.display='none';
-    $('gl-qr-status').textContent='🔴 Lector activo — presiona el gatillo';
-    setTimeout(()=>{$('gl-ir-inp').value='';$('gl-ir-inp').focus();},50);
-    S.glScanning=true;
-  }else startGLCam();
-}
-
-async function startGLCam(){
-  if(S.glCamMode==='ir'){setGLCam('ir');return;}
-  stopGLCam();S.glScanning=true;$('gl-vid').style.display='block';
-  $('gl-qr-status').innerHTML='<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial GL...</div>';
-  try{
-    S.glStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
-    const v=$('gl-vid');v.srcObject=S.glStream;await v.play();glScanLoop();
-  }catch(e){$('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ ${e.message}</span>`;}
-}
-
-function glScanLoop(){
-  if(!S.glScanning||!S.glStream)return;
-  const vid=$('gl-vid'),cvs=$('gl-canvas');
-  if(vid.readyState<2){requestAnimationFrame(glScanLoop);return;}
-  const sz=Math.min(Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.6),380);
-  cvs.width=sz;cvs.height=sz;
-  const ctx=cvs.getContext('2d',{willReadFrequently:true});
-  ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
-  if(typeof jsQR!=='undefined'){
-    const c=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz);
-    if(c?.data){const emp=extractEmp(c.data);if(emp){S.glScanning=false;validateGL(emp);return;}}
-  }
-  requestAnimationFrame(glScanLoop);
-}
-
-function stopGLCam(){
-  S.glScanning=false;
-  if(S.glStream){S.glStream.getTracks().forEach(t=>t.stop());S.glStream=null;}
-  const v=$('gl-vid');if(v){v.srcObject=null;v.style.display='none';}
-}
-
-let _gib=null;
-function onGLBarcode(val){
-  clearTimeout(_gib);
-  _gib=setTimeout(()=>{
-    const raw=val.trim();$('gl-ir-inp').value='';
-    setTimeout(()=>$('gl-ir-inp').focus(),50);
-    if(!raw)return;
-    const emp=extractEmp(raw);
-    if(emp)validateGL(emp);
-    else $('gl-qr-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
-  },150);
-}
-
-function validateGL(emp){
-  stopGLCam();
-  const gl=GL.find(g=>g.e===emp&&(g.a===S.secA||g.a==='PC'));
-  if(gl){
-    S.glAuthed=gl;
-    $('gl-qr-status').innerHTML=`<span style="color:var(--green)">✅ Autorizado: ${gl.n}</span>`;
-    $('gl-ok').style.background='var(--green)';$('gl-ok').textContent='✅ Confirmar';
-    setTimeout(authorizeGL,700);
-  }else{
-    $('gl-qr-status').innerHTML=`<span style="color:var(--red)">❌ #${emp} no es GL autorizado para ${S.secA}</span>`;
-    S.glAuthed=null;
-  }
-}
-
-function authorizeGL(){
-  const ae=$('gl-alert');
-  if(S.glAuthed){
-    stopGLCam();$('gl-modal').classList.remove('show');
-    const pc=S.pending;if(!pc)return;S.pending=null;
-    const cajas=parseInt($('inp-cajas').value)||0;
-    const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
-    showUnlock(`🔓 Autorizado por ${S.glAuthed.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
-    saveCapture(pc.seb,cajas,pzas,pc.key,pc.conteo);S.glAuthed=null;return;
-  }
-  const sel=parseInt($('gl-sel').value);const emp=parseInt($('gl-emp-inp').value);
-  if(!sel||!emp){ae.textContent='Selecciona un GL e ingresa su número de empleado.';ae.classList.add('show');return;}
-  const gl=GL.find(g=>g.e===sel&&(g.a===S.secA||g.a==='PC'));
-  if(!gl||gl.e!==emp){ae.textContent='Número de empleado incorrecto para ese GL.';ae.classList.add('show');return;}
-  $('gl-modal').classList.remove('show');
-  const pc=S.pending;if(!pc)return;S.pending=null;
-  const cajas=parseInt($('inp-cajas').value)||0;
-  const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
-  showUnlock(`🔓 Autorizado por ${gl.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
-  saveCapture(pc.seb,cajas,pzas,pc.key,pc.conteo);
-}
-
-(function init(){
-  if(typeof jsQR==='undefined'){
-    const s=document.createElement('script');
-    s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
-    document.head.appendChild(s);
-  }
-  if(_q.length){badge();setTimeout(flushQ,3000);}
-})();
-</script>
-</body>
-</html>
+  S.glAuthed=null
