@@ -55,7 +55,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 #screen-scan{padding:clamp(10px,2vw,16px);background:var(--bg)}
 #screen-a,#screen-b{padding:clamp(10px,2vw,14px);gap:clamp(8px,1.5vw,12px);background:var(--bg)}
 
-/* ══ LOGIN — ocupa toda la pantalla disponible ═══════════ */
+/* ══ LOGIN ═══════════════════════════════════════════════ */
 #screen-login{
   display:none;flex-direction:column;
   padding:0;background:linear-gradient(160deg,#1254c0 0%,#1a73e8 45%,#0d47a1 100%);
@@ -80,7 +80,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   gap:0;overflow-y:auto;
 }
 
-/* Entrada manual */
 .emp-section{margin-bottom:clamp(14px,3vh,22px)}
 .emp-label{font-size:var(--fs-xs);font-weight:700;letter-spacing:.8px;color:var(--txt);text-transform:uppercase;margin-bottom:8px}
 .emp-inp-wrap{display:flex;gap:10px}
@@ -104,7 +103,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .divider span{font-size:var(--fs-xs);color:var(--txt);white-space:nowrap}
 
-/* Scanner en login */
 .login-scan-section{flex:1;display:flex;flex-direction:column;gap:10px}
 .cam-selector{display:flex;gap:8px;margin-bottom:0}
 .cam-opt{flex:1;padding:clamp(11px,2.5vh,14px) 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-size:var(--fs-s);font-weight:700;cursor:pointer;color:var(--txt)}
@@ -226,8 +224,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .btn-green{background:linear-gradient(180deg,#1e8e3e,#145a2b);color:#fff;box-shadow:0 5px 0 #0a3a1c,0 7px 14px rgba(0,0,0,.22)}
 .btn-green:active{box-shadow:0 1px 0 #0a3a1c;transform:translateY(4px)}
 .btn-outline{background:var(--white);border:2px solid var(--border);color:var(--txt);box-shadow:var(--sh);font-size:var(--fs-s);padding:clamp(10px,2vh,13px)}
-
-/* Botón revisar faltantes */
 .btn-warn{background:var(--white);border:2px solid #f8d18a;color:#7a4a00;box-shadow:var(--sh);font-size:var(--fs-s);padding:clamp(10px,2vh,13px)}
 
 /* ══ ALERTS ═══════════════════════════════════════════════ */
@@ -273,7 +269,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .pl-modal .pl-msg-box{background:var(--white); border-radius:10px; padding:15px; text-align:center; margin-bottom:15px; font-size:var(--fs-m); border:1.5px solid #f5b7b5;}
 .pl-modal .pl-action{color:var(--red); font-weight:800; text-transform:uppercase; text-align:center; margin-bottom:10px; font-size:18px;}
 
-/* saving overlay */
+/* SAVING OVERLAY */
 .saving-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:250;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .saving-overlay.show{display:flex}
 .saving-spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
@@ -304,7 +300,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 <div class="screens">
 
   <div class="screen active" id="screen-login">
-
     <div class="login-top">
       <div class="login-ico">🪪</div>
       <div class="login-title">Identificación</div>
@@ -316,8 +311,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
         <div class="emp-label">Número de empleado</div>
         <div class="emp-inp-wrap">
           <input class="emp-inp" id="emp-manual-inp" type="text" inputmode="numeric"
-            maxlength="5" placeholder="1XXXX"
-            autocomplete="off" oninput="onManualEmpInput(this.value)">
+            maxlength="5" placeholder="1XXXX" autocomplete="off" oninput="onManualEmpInput(this.value)">
           <button class="emp-go" id="emp-go-btn" onclick="submitManualEmp()">→</button>
         </div>
         <div id="login-status"></div>
@@ -327,8 +321,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
       <div class="login-scan-section">
         <div class="cam-selector">
-          <button class="cam-opt on" id="lc-env" onclick="setLoginCam('env')">📷 Cámara</button>
-          <button class="cam-opt"    id="lc-ir"  onclick="setLoginCam('ir')">🔴 Lector IR</button>
+          <button class="cam-opt on" id="lc-env" onclick="setLoginCam('env')">Cámara</button>
+          <button class="cam-opt"    id="lc-ir"  onclick="setLoginCam('ir')">Lector IR</button>
         </div>
 
         <div id="login-scanner-wrap" style="display:none">
@@ -358,7 +352,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
         </div>
 
         <button class="btn-login-cam" id="login-btn" onclick="startLoginScan()">
-          📷 Activar cámara
+          Activar cámara
         </button>
 
         <div class="scan-status" id="login-scan-status"></div>
@@ -383,7 +377,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   </div>
 
   <div class="screen" id="screen-scan">
-
     <div id="alert-ok"   class="alert ok"><span class="alert-ico">✅</span><span id="alert-ok-t"></span></div>
     <div id="alert-err"  class="alert err"><span class="alert-ico">❌</span><span id="alert-err-t"></span></div>
     <div id="alert-warn" class="alert warn"><span class="alert-ico">⚠️</span><span id="alert-warn-t"></span></div>
@@ -392,8 +385,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     <div id="scan-section">
       <div class="bc-step">Paso 3 de 3 — Escaneo y Captura</div>
       <div class="cam-selector">
-        <button class="cam-opt on" id="cc-env" onclick="switchCam('env')">📷 Cámara</button>
-        <button class="cam-opt"    id="cc-ir"  onclick="switchCam('ir')">🔴 Lector</button>
+        <button class="cam-opt on" id="cc-env" onclick="switchCam('env')">Cámara</button>
+        <button class="cam-opt"    id="cc-ir"  onclick="switchCam('ir')">Lector</button>
       </div>
       <div id="cam-wrap" style="display:none">
         <div class="scan-wrap">
@@ -419,7 +412,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
           style="position:fixed;opacity:0;width:1px;height:1px;top:0;left:0"
           autocomplete="off" oninput="onScanBarcode(this.value)">
       </div>
-      <button class="btn btn-blue" id="cam-btn" onclick="activateCam()">📷 Activar cámara</button>
+      <button class="btn btn-blue" id="cam-btn" onclick="activateCam()">Activar cámara</button>
       
       <div class="scan-status" id="scan-status">
         <div class="pulse-wrap"><div class="dot"></div>Listo para escanear</div>
@@ -498,7 +491,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     <p id="gl-msg">Sebango ya registrado. Un Grupo Líder debe autorizar para continuar.</p>
     <div class="cam-selector">
       <button class="cam-opt on" id="glm-manual" onclick="setGLMode('manual')">⌨️ Manual</button>
-      <button class="cam-opt"    id="glm-qr"     onclick="setGLMode('qr')">📷 QR Credencial</button>
+      <button class="cam-opt"    id="glm-qr"     onclick="setGLMode('qr')">QR Credencial</button>
     </div>
     <div id="gl-manual">
       <select id="gl-sel"><option value="">— Selecciona GL —</option></select>
@@ -517,8 +510,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
       </div>
       <canvas id="gl-canvas" style="display:none"></canvas>
       <div class="cam-selector" style="margin-bottom:8px">
-        <button class="cam-opt on" id="gl-cam-env" onclick="setGLCam('env')">📷 Cámara</button>
-        <button class="cam-opt"    id="gl-cam-ir"  onclick="setGLCam('ir')">🔴 Lector</button>
+        <button class="cam-opt on" id="gl-cam-env" onclick="setGLCam('env')">Cámara</button>
+        <button class="cam-opt"    id="gl-cam-ir"  onclick="setGLCam('ir')">Lector</button>
       </div>
       <input id="gl-ir-inp" type="text"
         style="position:fixed;opacity:0;width:1px;height:1px;top:0;left:0"
@@ -606,7 +599,7 @@ async function flushQ(){
       cajas:it.cajas,parcialPzas:it.pzas,conteo:it.conteo,usuario:it.usuario});
     const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:c.signal});
     const d=await r.json();
-    if(d.success||d.ok){qDel(it.ts);if(_q.length)setTimeout(flushQ,800);else showAlert('ok','✅ Capturas pendientes sincronizadas');}
+    if(d.success||d.ok){qDel(it.ts);if(_q.length)setTimeout(flushQ,800);else showAlert('ok','Capturas sincronizadas');}
   }catch(e){}
 }
 window.addEventListener('online',()=>{if(_q.length){setTimeout(flushQ,1000);}});
@@ -617,7 +610,7 @@ function badge(){
     b.style.cssText='background:#e37400;color:#fff;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;display:none;margin-right:4px;flex-shrink:0';
     $('hdr').insertBefore(b,$('back-btn'));}
   b.style.display=_q.length?'block':'none';
-  if(_q.length)b.textContent=`📥 ${_q.length}`;
+  if(_q.length)b.textContent=`${_q.length}`;
 }
 
 const S={
@@ -644,29 +637,25 @@ function setSaving(show,txt='Guardando en Google Sheets...'){
   $('saving-txt').textContent=txt;
 }
 
-// NUEVA FUNCIÓN DE EXTRACCIÓN CON SOPORTE PARA SEBANGOS PEGADOS A LA CANTIDAD
 function extractSeb(raw){
   const s = raw.toUpperCase();
-  
-  // 1. Búsqueda principal: Sebango aislado (ej. " K711 ", " XN12 ")
   let m1 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
   if(m1) return m1[1];
-
-  // 2. Búsqueda secundaria: Sebango pegado a la cantidad (ej. "K51500360")
   let m2 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})\d{5}(?=\s|$)/g);
   if(m2){
     for(let match of m2){
       let clean = match.trim();
-      // Evitar falsos positivos con fechas que empiezan con K y el año (ej. K20260521)
       if(clean.startsWith('K202') || clean.startsWith('K203')) continue;
       return clean.substring(0, 4);
     }
   }
-
   return null;
 }
 
-function extractEmp(raw){const m=raw.match(/\b(1\d{4})\b/);return m?parseInt(m[1]):null;}
+function extractEmp(raw){
+  const m=raw.match(/(?:^|\D)(1\d{4})(?=\D|$)/);
+  return m?parseInt(m[1]):null;
+}
 function cLabel(n){return n===1?'1er Conteo':n===2?'2do Conteo':'3er Conteo';}
 
 function goBack(){
@@ -684,7 +673,6 @@ function resetLoginUI(){
   $('login-scanner-wrap').style.display='none';
   $('login-ir-wrap').style.display='none';
   $('login-btn').style.display='flex';
-  $('login-btn').textContent='📷 Activar cámara';
   $('login-btn').disabled=false;
   $('login-status').textContent='';
   $('login-scan-status').textContent='';
@@ -698,7 +686,7 @@ function submitManualEmp(){
   const emp2=v.length===5&&/^1\d{4}$/.test(v)?parseInt(v):null;
   const e=emp2||emp;
   if(e)loginSuccess(e);
-  else $('login-status').innerHTML=`⚠️ Número inválido — debe ser 1XXXX`;
+  else $('login-status').innerHTML=`Número inválido — debe ser 1XXXX`;
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
@@ -745,8 +733,8 @@ async function startLoginScan(){
     loginScanLoop();
   }catch(e){
     $('login-btn').style.display='flex';
-    $('login-btn').textContent='📷 Reintentar';
-    $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ Permiso denegado</span>`;
+    $('login-btn').textContent='Reintentar';
+    $('login-scan-status').innerHTML=`<span style="color:var(--red)">Permiso denegado</span>`;
   }
 }
 
@@ -760,7 +748,7 @@ function loginScanLoop(){
   ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
   if(typeof jsQR!=='undefined'){
     const c=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz,{inversionAttempts:'dontInvert'});
-    if(c?.data){const emp=extractEmp(c.data);if(emp){loginSuccess(emp);return;}}
+    if(c && c.data){const emp=extractEmp(c.data);if(emp){loginSuccess(emp);return;}}
   }
   requestAnimationFrame(loginScanLoop);
 }
@@ -781,7 +769,7 @@ function onLoginBarcode(val){
     if(!raw)return;
     const emp=extractEmp(raw);
     if(emp)loginSuccess(emp);
-    else $('login-scan-status').innerHTML=`<span style="color:var(--red)">⚠️ No se encontró número de empleado</span>`;
+    else $('login-scan-status').innerHTML=`<span style="color:var(--red)">No se encontró número</span>`;
   },120);
 }
 
@@ -825,7 +813,7 @@ async function selectB(sec){
     S.sectionCatalog = data.sebangos || [];
     
     if(S.sectionCatalog.length === 0){
-      console.warn("El servidor respondió correctamente, pero no envió Sebangos.");
+      console.warn("Sin Sebangos.");
     }
 
     setSaving(false);
@@ -833,14 +821,14 @@ async function selectB(sec){
   } catch(e) {
     setSaving(false);
     S.sectionCatalog = [];
-    showAlert('warn', 'Modo Offline: No se pudo conectar con la base de datos. No se bloquearán capturas.', true);
+    showAlert('warn', 'Modo Offline: No se pudo conectar con la base de datos.', true);
     resetScanScreen(); showScreen('scan'); activateCam();
   }
 }
 
 function verificarFaltantes() {
   if (!S.sectionCatalog || S.sectionCatalog.length === 0) {
-    showAlert('warn', 'No se descargó el catálogo de esta ubicación (trabajando offline).');
+    showAlert('warn', 'No se descargó el catálogo de esta ubicación.');
     return;
   }
   
@@ -854,9 +842,9 @@ function verificarFaltantes() {
     .map(item => item.sebango);
     
   if (faltan.length === 0) {
-    showAlert('ok', '✅ ¡Excelente! No faltan sebangos por capturar en esta ubicación.', true);
+    showAlert('ok', '¡Excelente! No faltan sebangos por capturar.', true);
   } else {
-    showAlert('warn', `⚠️ Faltan ${faltan.length} sebangos en esta sección:\n${faltan.join(', ')}`, true);
+    showAlert('warn', `Faltan ${faltan.length} sebangos en esta sección:\n${faltan.join(', ')}`, true);
   }
 }
 
@@ -891,7 +879,7 @@ async function activateCam(){
   if(S.scanMode==='ir'){
     $('cam-wrap').style.display='none';$('ir-wrap').style.display='block';
     setTimeout(()=>{$('scan-ir-inp').value='';$('scan-ir-inp').focus();},50);
-    setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Lector activo — presiona el gatillo</div>');
+    setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Lector activo</div>');
     clearInterval(S._irFocus);
     S._irFocus=setInterval(()=>{
       if(S.scanMode==='ir'&&$('screen-scan').classList.contains('active'))$('scan-ir-inp').focus();
@@ -910,8 +898,8 @@ async function activateCam(){
     setScanStatus('<div class="pulse-wrap"><div class="dot"></div>Escaneando...</div>');
     scanLoop();
   }catch(e){
-    S.camActive=false;$('cam-btn').style.display='flex';$('cam-btn').textContent='📷 Reintentar';
-    setScanStatus('⚠️ Error de cámara','err');
+    S.camActive=false;$('cam-btn').style.display='flex';$('cam-btn').textContent='Reintentar';
+    setScanStatus('Error de cámara','err');
   }
 }
 
@@ -934,7 +922,7 @@ function scanLoop(){
   ctx.drawImage(vid,(vid.videoWidth-raw)/2,(vid.videoHeight-raw)/2,raw,raw,0,0,sz,sz);
   if(typeof jsQR!=='undefined'){
     const code=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz,{inversionAttempts:'dontInvert'});
-    if(code?.data&&code.data!==S.lastRaw){
+    if(code && code.data && code.data!==S.lastRaw){
       S.lastRaw=code.data;
       const seb=extractSeb(code.data);
       if(seb){S.scanning=false;clearTimeout(S._scanT);onSebango(seb);return;}
@@ -958,7 +946,7 @@ function onScanBarcode(val){
     if(!raw)return;
     const seb=extractSeb(raw);
     if(seb)onSebango(seb);
-    else setScanStatus('⚠️ No se reconoció sebango — verifica formato o coincidencia','err');
+    else setScanStatus('No se reconoció sebango','err');
   },100);
 }
 
@@ -990,9 +978,8 @@ async function onSebango(seb){
   if(cached){
     applyLookup(seb,key,cached,true);
     fetchBg(seb,key);
-    // [CORRECCIÓN]: Ya no se abre el GL de inmediato. Solo se muestra la alerta para que puedas teclear la cantidad.
     if(S.isDup){
-      $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+      $('dup-msg').textContent=`Este sebango ya fue capturado. GL requerido al guardar.`;
       $('dup-card').classList.add('show');
     }
     return;
@@ -1009,9 +996,8 @@ async function onSebango(seb){
     if(d.found){
       cachePut(seb,d);
       applyLookup(seb,key,d,false);
-      // [CORRECCIÓN]: Igual aquí, solo muestra el aviso visual.
       if(S.isDup){
-        $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+        $('dup-msg').textContent=`Este sebango ya fue capturado. GL requerido al guardar.`;
         $('dup-card').classList.add('show');
       }
     }else{
@@ -1026,13 +1012,12 @@ async function onSebango(seb){
     $('res-meta').textContent=`${S.secA} › ${S.secB}`;
     $('res-conteo').textContent=cLabel(S.conteo);
     setupInputs();$('btn-cap').disabled=false;
-    // [CORRECCIÓN]: Offline duplicado
     if(S.isDup){
-      $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido al guardar.`;
+      $('dup-msg').textContent=`Este sebango ya fue capturado. GL requerido al guardar.`;
       $('dup-card').classList.add('show');
-      showAlert('warn','⚠️ Sin conexión y sebango duplicado — se requiere GL al capturar');
+      showAlert('warn','Sin conexión y sebango duplicado');
     }else{
-      showAlert('warn',e.name==='AbortError'?'⚠️ Sin respuesta — modo offline':'⚠️ Sin conexión — captura offline');
+      showAlert('warn','Sin conexión — captura offline');
     }
   }
 }
@@ -1049,7 +1034,7 @@ function applyLookup(seb,key,d,fromCache){
   const selB=(S.secB||'').toUpperCase().replace(/\s/g,'');
   const match=!sheetUb||sheetUb===selB||sheetUb.includes(selB)||selB.includes(sheetUb);
   if(!match&&sheetUb){
-    $('loc-chip').textContent=`⚠️ BD: ${d.ubicacion}`;
+    $('loc-chip').textContent=`BD: ${d.ubicacion}`;
     $('loc-chip').style.display='inline-flex';
   }
 
@@ -1090,13 +1075,11 @@ function calcTotal(){const c=parseInt($('inp-cajas').value)||0;let t=c*S.qpc;if(
 async function doCapture(){
   const key=`${S.seb}||${S.secA}||${S.secB}`;
   
-  // Al presionar el botón "Capturar", verificamos si necesita GL.
-  // Aquí es donde congelamos la cantidad exacta que acabas de escribir.
   if(S.isDup||S.session[key]!==undefined){
     const cajas=parseInt($('inp-cajas').value)||0;
     const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
-    S.pending={seb:S.seb,cajas,pzas,key,conteo:S.conteo};
-    openGL(); // Abre el modal de autorización.
+    S.pending={seb:S.seb,cajas:cajas,pzas:pzas,key:key,conteo:S.conteo};
+    openGL(); 
     return;
   }
   
@@ -1123,7 +1106,7 @@ async function saveCapture(seb,cajas,pzas,key,conteo){
       S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
       setSaving(false);
       const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
-      showAlert('ok',`✅ ${seb}: ${res} — ${cLabel(conteo)} guardado en Sheets`);
+      showAlert('ok',`${seb}: ${res} — ${cLabel(conteo)} guardado en Sheets`);
       addHist(seb,cajas,pzas,conteo,false);
       $('btn-cap').style.display='none';
       $('btn-next').style.display='flex';
@@ -1139,14 +1122,14 @@ async function saveCapture(seb,cajas,pzas,key,conteo){
       S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
       qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
       const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
-      showAlert('warn',`📥 ${seb}: ${res} — ${cLabel(conteo)} guardado localmente (sin señal)`);
+      showAlert('warn',`${seb}: ${res} — ${cLabel(conteo)} guardado localmente`);
       addHist(seb,cajas,pzas,conteo,true);
       $('btn-cap').style.display='none';
       $('btn-next').style.display='flex';
       $('btn-rescan').style.display='none';
       $('dup-card').classList.remove('show');
     }else{
-      showAlert('err',`❌ Error al guardar: ${e.message}. Verifica tu conexión e intenta de nuevo.`);
+      showAlert('err',`Error al guardar: ${e.message}`);
       $('btn-cap').disabled=false;
     }
   }
@@ -1176,4 +1159,134 @@ function rescan(){
 }
 
 function openGL(){
-  S.glAuthed=null
+  S.glAuthed=null;
+  const seb=S.pending?.seb||S.seb||'';
+  const sel=$('gl-sel');sel.innerHTML='<option value="">— Selecciona GL —</option>';
+  GL.filter(g=>g.a===S.secA||g.a==='PC').forEach(g=>{
+    sel.innerHTML+=`<option value="${g.e}">${g.n} (#${g.e})</option>`;
+  });
+  $('gl-emp-inp').value='';
+  $('gl-alert').classList.remove('show');
+  $('gl-ok').textContent='Autorizar';$('gl-ok').style.background='var(--blue)';
+  $('gl-qr-status').textContent='';
+  $('gl-msg').textContent=`${seb} registrado en ${S.secA}. Un GL debe autorizar.`;
+  if(seb){
+    $('dup-msg').textContent=`Este sebango ya fue capturado aquí. GL requerido.`;
+    $('dup-card').classList.add('show');
+  }
+  setGLMode('manual');$('gl-modal').classList.add('show');
+}
+
+function closeGL(){
+  stopGLCam();$('gl-modal').classList.remove('show');
+  S.pending=null;S.glAuthed=null;
+  rescan();
+}
+
+function setGLMode(m){
+  $('glm-manual').className='cam-opt'+(m==='manual'?' on':'');
+  $('glm-qr').className   ='cam-opt'+(m==='qr'    ?' on':'');
+  $('gl-manual').style.display=m==='manual'?'block':'none';
+  $('gl-qr').style.display    =m==='qr'    ?'block':'none';
+  if(m==='qr')startGLCam();else stopGLCam();
+}
+
+function setGLCam(m){
+  S.glCamMode=m;
+  $('gl-cam-env').className='cam-opt'+(m==='env'?' on':'');
+  $('gl-cam-ir').className ='cam-opt'+(m==='ir' ?' on':'');
+  if(m==='ir'){
+    stopGLCam();$('gl-vid').style.display='none';
+    $('gl-qr-status').textContent='Lector activo — presiona el gatillo';
+    setTimeout(()=>{$('gl-ir-inp').value='';$('gl-ir-inp').focus();},50);
+    S.glScanning=true;
+  }else startGLCam();
+}
+
+async function startGLCam(){
+  if(S.glCamMode==='ir'){setGLCam('ir');return;}
+  stopGLCam();S.glScanning=true;$('gl-vid').style.display='block';
+  $('gl-qr-status').innerHTML='<div class="pulse-wrap"><div class="dot"></div>Escaneando credencial GL...</div>';
+  try{
+    S.glStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+    const v=$('gl-vid');v.srcObject=S.glStream;await v.play();glScanLoop();
+  }catch(e){$('gl-qr-status').innerHTML=`<span style="color:var(--red)">Error de cámara</span>`;}
+}
+
+function glScanLoop(){
+  if(!S.glScanning||!S.glStream)return;
+  const vid=$('gl-vid'),cvs=$('gl-canvas');
+  if(vid.readyState<2){requestAnimationFrame(glScanLoop);return;}
+  const sz=Math.min(Math.floor(Math.min(vid.videoWidth,vid.videoHeight)*0.6),380);
+  cvs.width=sz;cvs.height=sz;
+  const ctx=cvs.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(vid,(vid.videoWidth-sz)/2,(vid.videoHeight-sz)/2,sz,sz,0,0,sz,sz);
+  if(typeof jsQR!=='undefined'){
+    const c=jsQR(ctx.getImageData(0,0,sz,sz).data,sz,sz);
+    if(c && c.data){const emp=extractEmp(c.data);if(emp){S.glScanning=false;validateGL(emp);return;}}
+  }
+  requestAnimationFrame(glScanLoop);
+}
+
+function stopGLCam(){
+  S.glScanning=false;
+  if(S.glStream){S.glStream.getTracks().forEach(t=>t.stop());S.glStream=null;}
+  const v=$('gl-vid');if(v){v.srcObject=null;v.style.display='none';}
+}
+
+let _gib=null;
+function onGLBarcode(val){
+  clearTimeout(_gib);
+  _gib=setTimeout(()=>{
+    const raw=val.trim();$('gl-ir-inp').value='';
+    setTimeout(()=>$('gl-ir-inp').focus(),50);
+    if(!raw)return;
+    const emp=extractEmp(raw);
+    if(emp)validateGL(emp);
+    else $('gl-qr-status').innerHTML=`<span style="color:var(--red)">No se encontró número</span>`;
+  },150);
+}
+
+function validateGL(emp){
+  stopGLCam();
+  const gl=GL.find(g=>g.e===emp&&(g.a===S.secA||g.a==='PC'));
+  if(gl){
+    S.glAuthed=gl;
+    $('gl-qr-status').innerHTML=`<span style="color:var(--green)">Autorizado: ${gl.n}</span>`;
+    $('gl-ok').style.background='var(--green)';$('gl-ok').textContent='Confirmar';
+    setTimeout(authorizeGL,700);
+  }else{
+    $('gl-qr-status').innerHTML=`<span style="color:var(--red)">#${emp} no es GL autorizado</span>`;
+    S.glAuthed=null;
+  }
+}
+
+function authorizeGL(){
+  const ae=$('gl-alert');
+  if(S.glAuthed){
+    stopGLCam();$('gl-modal').classList.remove('show');
+    const pc=S.pending;if(!pc)return;S.pending=null;
+    showUnlock(`🔓 Autorizado por ${S.glAuthed.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
+    saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key,pc.conteo);S.glAuthed=null;return;
+  }
+  const sel=parseInt($('gl-sel').value);const emp=parseInt($('gl-emp-inp').value);
+  if(!sel||!emp){ae.textContent='Selecciona un GL e ingresa su número.';ae.classList.add('show');return;}
+  const gl=GL.find(g=>g.e===sel&&(g.a===S.secA||g.a==='PC'));
+  if(!gl||gl.e!==emp){ae.textContent='Número incorrecto para ese GL.';ae.classList.add('show');return;}
+  $('gl-modal').classList.remove('show');
+  const pc=S.pending;if(!pc)return;S.pending=null;
+  showUnlock(`🔓 Autorizado por ${gl.n} — ${cLabel(pc.conteo)} para ${pc.seb}`);
+  saveCapture(pc.seb,pc.cajas,pc.pzas,pc.key,pc.conteo);
+}
+
+(function init(){
+  if(typeof jsQR==='undefined'){
+    const s=document.createElement('script');
+    s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
+    document.head.appendChild(s);
+  }
+  if(_q.length){badge();setTimeout(flushQ,3000);}
+})();
+</script>
+</body>
+</html>
