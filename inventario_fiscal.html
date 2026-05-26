@@ -590,8 +590,25 @@ const qSave=()=>{try{localStorage.setItem(QK,JSON.stringify(_q));}catch(e){}};
 const qAdd=item=>{_q.push({...item,ts:Date.now()});qSave();badge();};
 const qDel=ts=>{_q=_q.filter(i=>i.ts!==ts);qSave();badge();};
 
+const S={
+  screen:'login',user:null,
+  secA:null,secB:null,
+  seb:null,qpc:0,ub:null,conteo:1,
+  partial:false,session:{},pending:null,
+  isDup:false, _isSyncing: false,
+  sectionCatalog: [], 
+  stream:null,camActive:false,scanMode:'env',scanning:false,lastRaw:null,
+  loginStream:null,loginScanning:false,loginMode:'env',
+  glStream:null,glScanning:false,glCamMode:'env',glAuthed:null,
+  _irFocus:null,_scanT:null,
+};
+
+// 🚀 RUTINA DE SINCRONIZACIÓN EN SEGUNDO PLANO
 async function flushQ(){
   if(!_q.length) return;
+  if(S._isSyncing) return;
+  S._isSyncing = true;
+  
   const it=_q[0];
   try{
     const c=new AbortController();setTimeout(()=>c.abort(),15000);
@@ -599,8 +616,14 @@ async function flushQ(){
       cajas:it.cajas,parcialPzas:it.pzas,conteo:it.conteo,usuario:it.usuario});
     const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:c.signal});
     const d=await r.json();
-    if(d.success||d.ok){qDel(it.ts);if(_q.length)setTimeout(flushQ,800);else showAlert('ok','Capturas sincronizadas');}
-  }catch(e){}
+    if(d.success||d.ok){
+      qDel(it.ts);
+      if(_q.length) { S._isSyncing = false; setTimeout(flushQ, 500); }
+      else { S._isSyncing = false; badge(); }
+    } else {
+      S._isSyncing = false;
+    }
+  }catch(e){ S._isSyncing = false; }
 }
 window.addEventListener('online',()=>{if(_q.length){setTimeout(flushQ,1000);}});
 
@@ -610,21 +633,8 @@ function badge(){
     b.style.cssText='background:#e37400;color:#fff;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;display:none;margin-right:4px;flex-shrink:0';
     $('hdr').insertBefore(b,$('back-btn'));}
   b.style.display=_q.length?'block':'none';
-  if(_q.length)b.textContent=`${_q.length}`;
+  if(_q.length)b.textContent=`${_q.length} pendientes`;
 }
-
-const S={
-  screen:'login',user:null,
-  secA:null,secB:null,
-  seb:null,qpc:0,ub:null,conteo:1,
-  partial:false,session:{},pending:null,
-  isDup:false,
-  sectionCatalog: [], 
-  stream:null,camActive:false,scanMode:'env',scanning:false,lastRaw:null,
-  loginStream:null,loginScanning:false,loginMode:'env',
-  glStream:null,glScanning:false,glCamMode:'env',glAuthed:null,
-  _irFocus:null,_scanT:null,
-};
 
 const $=id=>document.getElementById(id);
 function showScreen(n){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));const e=$('screen-'+n);if(e)e.classList.add('active');S.screen=n;}
@@ -632,7 +642,7 @@ function setHdrSub(t){$('hdr-sub').textContent=t;}
 function hideAlerts(){['ok','err','warn'].forEach(t=>$('alert-'+t).classList.remove('show'));$('unlock-banner').classList.remove('show');}
 function showAlert(type,msg,persist){hideAlerts();$('alert-'+type+'-t').textContent=msg;$('alert-'+type).classList.add('show');if(!persist)setTimeout(()=>$('alert-'+type).classList.remove('show'),7000);}
 function showUnlock(msg){$('unlock-txt').textContent=msg;$('unlock-banner').classList.add('show');}
-function setSaving(show,txt='Guardando en Google Sheets...'){
+function setSaving(show,txt='Cargando...'){
   $('saving-overlay').classList.toggle('show',show);
   $('saving-txt').textContent=txt;
 }
@@ -804,31 +814,25 @@ function selectA(area){
 async function selectB(sec){
   S.secB=sec; setHdrSub(S.secA+' › '+sec);
   
-  setSaving(true, 'Descargando sebangos de ubicación...');
+  setSaving(true, 'Descargando datos...');
   try {
     const url = `${API}?action=loadSection&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(sec)}`;
     const r = await fetch(url, { redirect: 'follow' });
     const data = await r.json();
-    
     S.sectionCatalog = data.sebangos || [];
-    
-    if(S.sectionCatalog.length === 0){
-      console.warn("Sin Sebangos.");
-    }
-
     setSaving(false);
     resetScanScreen(); showScreen('scan'); activateCam();
   } catch(e) {
     setSaving(false);
     S.sectionCatalog = [];
-    showAlert('warn', 'Modo Offline: No se pudo conectar con la base de datos.', true);
+    showAlert('warn', 'Modo Offline (conexión inestable)', true);
     resetScanScreen(); showScreen('scan'); activateCam();
   }
 }
 
 function verificarFaltantes() {
   if (!S.sectionCatalog || S.sectionCatalog.length === 0) {
-    showAlert('warn', 'No se descargó el catálogo de esta ubicación.');
+    showAlert('warn', 'No hay catálogo disponible offline.');
     return;
   }
   
@@ -1085,54 +1089,32 @@ async function doCapture(){
   
   const cajas=parseInt($('inp-cajas').value)||0;
   const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
-  await saveCapture(S.seb,cajas,pzas,key,S.conteo);
+  
+  // 🚀 MEJORA: GUARDADO EN SEGUNDO PLANO
+  // Ya no usamos "await saveCapture" para no bloquear la pantalla.
+  saveCapture(S.seb,cajas,pzas,key,S.conteo);
 }
 
-async function saveCapture(seb,cajas,pzas,key,conteo){
+// 🚀 MEJORA: FUNCIÓN OPTIMIZADA (SIN ESPERAS)
+function saveCapture(seb,cajas,pzas,key,conteo){
   $('btn-cap').disabled=true;
-  setSaving(true,'Guardando en Google Sheets...');
   const usuario=S.user?`${S.user.e} - ${S.user.n}`:'Sin identificar';
 
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),12000);
-
-  try{
-    const p=new URLSearchParams({action:'save',sebango:seb,secA:S.secA,secB:S.secB,
-      cajas,parcialPzas:pzas,conteo,usuario});
-    const r=await fetch(`${API}?${p}`,{redirect:'follow',signal:ctrl.signal});
-    clearTimeout(t);
-    const d=await r.json();
-    if(d.success||d.ok){
-      S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
-      setSaving(false);
-      const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
-      showAlert('ok',`${seb}: ${res} — ${cLabel(conteo)} guardado en Sheets`);
-      addHist(seb,cajas,pzas,conteo,false);
-      $('btn-cap').style.display='none';
-      $('btn-next').style.display='flex';
-      $('btn-rescan').style.display='none';
-      $('dup-card').classList.remove('show');
-    }else{
-      throw new Error(d.message||'El servidor rechazó la captura');
-    }
-  }catch(e){
-    clearTimeout(t);
-    setSaving(false);
-    if(e.name==='AbortError'||!navigator.onLine){
-      S.session[key]=conteo;S.conteo=conteo;S.isDup=false;
-      qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
-      const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
-      showAlert('warn',`${seb}: ${res} — ${cLabel(conteo)} guardado localmente`);
-      addHist(seb,cajas,pzas,conteo,true);
-      $('btn-cap').style.display='none';
-      $('btn-next').style.display='flex';
-      $('btn-rescan').style.display='none';
-      $('dup-card').classList.remove('show');
-    }else{
-      showAlert('err',`Error al guardar: ${e.message}`);
-      $('btn-cap').disabled=false;
-    }
-  }
+  // Registramos como guardado localmente de forma inmediata
+  S.session[key]=conteo; S.conteo=conteo; S.isDup=false;
+  qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
+  
+  const res=`${cajas} caja${cajas!==1?'s':''}${pzas>0?' + '+pzas+' pzas':''}`;
+  showAlert('ok',`✅ ${seb}: ${res} guardado (Sincronizando ☁️)`);
+  addHist(seb,cajas,pzas,conteo,true);
+  
+  $('btn-cap').style.display='none';
+  $('btn-next').style.display='flex';
+  $('btn-rescan').style.display='none';
+  $('dup-card').classList.remove('show');
+  
+  // Enviamos los datos por detrás a los 100 milisegundos sin estorbar al usuario
+  setTimeout(flushQ, 100);
 }
 
 function addHist(seb,cajas,pzas,conteo,pending){
@@ -1280,6 +1262,10 @@ function authorizeGL(){
 }
 
 (function init(){
+  // 🚀 MEJORA: PRE-CALENTAMIENTO DEL SERVIDOR
+  // "Despierta" a Google Sheets en segundo plano sin bloquear la app
+  fetch(`${API}?action=ping`, {mode: 'no-cors'}).catch(()=>{});
+
   if(typeof jsQR==='undefined'){
     const s=document.createElement('script');
     s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
