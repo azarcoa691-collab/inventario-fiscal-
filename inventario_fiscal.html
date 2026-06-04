@@ -603,7 +603,6 @@ const S={
   _irFocus:null,_scanT:null,
 };
 
-// 🚀 RUTINA DE SINCRONIZACIÓN EN SEGUNDO PLANO
 async function flushQ(){
   if(!_q.length) return;
   if(S._isSyncing) return;
@@ -830,25 +829,52 @@ async function selectB(sec){
   }
 }
 
-function verificarFaltantes() {
+// 🚀 FUNCIÓN ACTUALIZADA: REVISA CONTRA TUS COMPAÑEROS
+async function verificarFaltantes() {
   if (!S.sectionCatalog || S.sectionCatalog.length === 0) {
-    showAlert('warn', 'No hay catálogo disponible offline.');
+    showAlert('warn', 'No hay catálogo disponible para revisar.');
     return;
   }
   
-  const claveUbicacion = `||${S.secA}||${S.secB}`;
-  const capturados = Object.keys(S.session)
-    .filter(k => k.includes(claveUbicacion))
-    .map(k => k.split('||')[0]);
+  setSaving(true, 'Sincronizando con los demás equipos...');
+
+  try {
+    const url = `${API}?action=getCapturados&secA=${encodeURIComponent(S.secA)}&secB=${encodeURIComponent(S.secB)}`;
+    const r = await fetch(url, { redirect: 'follow' });
+    const data = await r.json();
     
-  const faltan = S.sectionCatalog
-    .filter(item => !capturados.includes(item.sebango))
-    .map(item => item.sebango);
+    const capturadosEnServidor = data.capturados || [];
     
-  if (faltan.length === 0) {
-    showAlert('ok', '¡Excelente! No faltan sebangos por capturar.', true);
-  } else {
-    showAlert('warn', `Faltan ${faltan.length} sebangos en esta sección:\n${faltan.join(', ')}`, true);
+    const claveUbicacion = `||${S.secA}||${S.secB}`;
+    const capturadosLocales = Object.keys(S.session)
+      .filter(k => k.includes(claveUbicacion))
+      .map(k => k.split('||')[0]);
+      
+    const todosLosCapturados = [...new Set([...capturadosEnServidor, ...capturadosLocales])];
+    
+    const faltan = S.sectionCatalog
+      .filter(item => !todosLosCapturados.includes(item.sebango))
+      .map(item => item.sebango);
+      
+    setSaving(false);
+    
+    if (faltan.length === 0) {
+      showAlert('ok', '✅ ¡Excelente! La sección está completa al 100%.', true);
+    } else {
+      showAlert('warn', `⚠️ Faltan ${faltan.length} sebangos:\n${faltan.join(', ')}`, true);
+    }
+    
+  } catch(e) {
+    setSaving(false);
+    const claveUbicacion = `||${S.secA}||${S.secB}`;
+    const capturadosLocales = Object.keys(S.session).filter(k => k.includes(claveUbicacion)).map(k => k.split('||')[0]);
+    const faltan = S.sectionCatalog.filter(item => !capturadosLocales.includes(item.sebango)).map(item => item.sebango);
+    
+    if (faltan.length === 0) {
+      showAlert('ok', '✅ Completado (Modo Offline).', true);
+    } else {
+      showAlert('warn', `⚠️ Faltan ${faltan.length} sebangos (Modo Offline):\n${faltan.join(', ')}`, true);
+    }
   }
 }
 
@@ -1090,17 +1116,13 @@ async function doCapture(){
   const cajas=parseInt($('inp-cajas').value)||0;
   const pzas=(S.secA!=='LOGISTICA'&&S.qpc<30&&S.partial)?(parseInt($('inp-parcial').value)||0):0;
   
-  // 🚀 MEJORA: GUARDADO EN SEGUNDO PLANO
-  // Ya no usamos "await saveCapture" para no bloquear la pantalla.
   saveCapture(S.seb,cajas,pzas,key,S.conteo);
 }
 
-// 🚀 MEJORA: FUNCIÓN OPTIMIZADA (SIN ESPERAS)
 function saveCapture(seb,cajas,pzas,key,conteo){
   $('btn-cap').disabled=true;
   const usuario=S.user?`${S.user.e} - ${S.user.n}`:'Sin identificar';
 
-  // Registramos como guardado localmente de forma inmediata
   S.session[key]=conteo; S.conteo=conteo; S.isDup=false;
   qAdd({seb,cajas,pzas,conteo,usuario,secA:S.secA,secB:S.secB});
   
@@ -1113,7 +1135,6 @@ function saveCapture(seb,cajas,pzas,key,conteo){
   $('btn-rescan').style.display='none';
   $('dup-card').classList.remove('show');
   
-  // Enviamos los datos por detrás a los 100 milisegundos sin estorbar al usuario
   setTimeout(flushQ, 100);
 }
 
@@ -1262,8 +1283,6 @@ function authorizeGL(){
 }
 
 (function init(){
-  // 🚀 MEJORA: PRE-CALENTAMIENTO DEL SERVIDOR
-  // "Despierta" a Google Sheets en segundo plano sin bloquear la app
   fetch(`${API}?action=ping`, {mode: 'no-cors'}).catch(()=>{});
 
   if(typeof jsQR==='undefined'){
