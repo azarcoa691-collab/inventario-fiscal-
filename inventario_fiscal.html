@@ -648,9 +648,12 @@ function setSaving(show,txt='Cargando...'){
 
 function extractSeb(raw){
   const s = raw.toUpperCase();
-  let m1 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
+  // Fix kanban temporal: replace newlines/tabs so "K137\n57147-04010" becomes "K137 57147-04010"
+  const norm = s.replace(/[\r\n\t]+/g,' ');
+  // Original logic on normalised string
+  let m1 = norm.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})(?=\s|$)/);
   if(m1) return m1[1];
-  let m2 = s.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})\d{5}(?=\s|$)/g);
+  let m2 = norm.match(/(?:^|\s)(XN\d{2}|XB\d{2}|[XABHCTK]\d{3})\d{5}(?=\s|$)/g);
   if(m2){
     for(let match of m2){
       let clean = match.trim();
